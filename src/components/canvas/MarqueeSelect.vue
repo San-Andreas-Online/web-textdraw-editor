@@ -21,8 +21,8 @@ defineProps({
 <style scoped>
 .marquee {
   position: absolute;
-  border: 1px dashed #0a246a;
-  background: rgba(10, 36, 106, 0.08);
+  border: 1px dashed #C80041;
+  background: #a8406123;
   pointer-events: none;
   box-sizing: border-box;
   z-index: 99;
