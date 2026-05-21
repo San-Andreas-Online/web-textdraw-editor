@@ -123,6 +123,7 @@ const highlighted = computed(() => {
 }
 .code-area {
   flex: 1;
+  overflow-y: auto;
   padding: 12px 14px;
   background: var(--bg0);
   font-family: 'Consolas', 'Courier New', monospace;
