@@ -19,7 +19,8 @@ const KNOWN_SPRITE_LIBS = [
   'hud', 'radar', 'sampcac', 'samp', 'timecyc',
 ]
 
-const scaleX = 592 / 640  // inverse of export's 640/592
+const SX = 640 / 592
+const INV_SX = 592 / 640
 
 function parseColor(raw) {
   const n = parseInt(raw)
@@ -85,13 +86,14 @@ export function importPawn(code) {
 
       const args = extractArgs(line)
       const coordsAndText = args.slice(args.length - 3)
-      const x = parseFloat(coordsAndText[0]) * scaleX
+
+      const x = parseFloat(coordsAndText[0]) * INV_SX
       const y = parseFloat(coordsAndText[1]) + 3
       const rawText = coordsAndText[2].replace(/^"|"$/g, '')
 
       current = {
         id: Math.random().toString(36).slice(2, 9),
-        isPlayer: isPlayer,
+        isPlayer,
         name: `td${elements.length + 1}`,
         type: 'label',
         visible: true,
@@ -111,8 +113,8 @@ export function importPawn(code) {
         useBox: false,
         proportional: false,
         selectable: false,
-        textSizeX: 0,
-        textSizeY: 0,
+        _rawTextSizeX: 0,
+        _rawTextSizeY: 0,
       }
       continue
     }
@@ -128,8 +130,8 @@ export function importPawn(code) {
       current.letterY = parseFloat(ly)
     } else if (/(?:TextDraw|PlayerTextDraw)TextSize/i.test(line)) {
       const [tx, ty] = extractLastArgs(line, 2)
-      current.textSizeX = parseFloat(tx) * scaleX  // reverse export's * (640/592)
-      current.textSizeY = parseFloat(ty)
+      current._rawTextSizeX = parseFloat(tx)
+      current._rawTextSizeY = parseFloat(ty)
     } else if (/(?:TextDraw|PlayerTextDraw)Alignment/i.test(line)) {
       const [raw] = extractLastArgs(line, 1)
       current.align = parseAlign(raw)
@@ -165,28 +167,36 @@ export function importPawn(code) {
     elements.push(current)
   }
 
-  // set w/h for sprites from textSizeX/Y
   for (const el of elements) {
-    if (el.type === 'sprite' && el.textSizeX > 0) {
-      el.w = el.textSizeX
-      el.h = el.textSizeY
-    }
+    const tx = el._rawTextSizeX
+    const ty = el._rawTextSizeY
+    delete el._rawTextSizeX
+    delete el._rawTextSizeY
 
-    // reverse calcTextSize to recover w/h for box elements
-    if (el.type === 'box' && el.useBox && el.textSizeX > 0) {
-      const tx = el.textSizeX
-      const ty = el.textSizeY
-      // calcTextSize: ty = el.y + el.h - 10, so el.h = ty - el.y + 10
-      el.h = ty - el.y + 10
+    if (el.type === 'sprite') {
+      el.text = el.text.toLowerCase()
+      el.w = tx * INV_SX
+      el.h = ty
+      el.textSizeX = 0
+      el.textSizeY = 0
+    } else if (el.useBox && tx > 0) {
+
+      const x_s = el.x * SX
+      const y_s = el.y - 3
+      el.h = ty - y_s + 10
       if (el.align === 1) {
-        // tx = el.w
-        el.w = tx
+        el.w = tx * INV_SX
       } else if (el.align === 2) {
-        // tx = el.x - 5, w not recoverable; leave default
+        // w is not encoded in TextSize for right-aligned; leave default
       } else {
-        // tx = el.x + el.w - 5, so el.w = tx - el.x + 5
-        el.w = tx - el.x + 5
+        el.w = (tx - x_s + 5) * INV_SX
       }
+      el.textSizeX = 0
+      el.textSizeY = 0
+    } else {
+      el.textSizeX = 0
+      el.textSizeY = 0
+      if (el.type === 'label' || el.type === 'button') el.h = 25
     }
   }
 
