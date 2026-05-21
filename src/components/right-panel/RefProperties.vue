@@ -13,11 +13,23 @@
     </PropRow>
 
     <XpPanel title="Transform">
-      <div class="grid2">
-        <PropRow label="X"><NumberInput :value="r.x" @update:modelValue="u('x', $event)" /></PropRow>
-        <PropRow label="Y"><NumberInput :value="r.y" @update:modelValue="u('y', $event)" /></PropRow>
-        <PropRow label="W"><NumberInput :value="r.w" :min="10" @update:modelValue="u('w', Math.max(10,$event))" /></PropRow>
-        <PropRow label="H"><NumberInput :value="r.h" :min="10" @update:modelValue="u('h', Math.max(10,$event))" /></PropRow>
+      <div class="num-grid">
+        <div class="num-cell">
+          <span class="num-label">X</span>
+          <NumberInput :value="r.x" @update:modelValue="u('x', $event)" />
+        </div>
+        <div class="num-cell">
+          <span class="num-label">Y</span>
+          <NumberInput :value="r.y" @update:modelValue="u('y', $event)" />
+        </div>
+        <div class="num-cell">
+          <span class="num-label">W</span>
+          <NumberInput :value="r.w" :min="10" @update:modelValue="u('w', Math.max(10,$event))" />
+        </div>
+        <div class="num-cell">
+          <span class="num-label">H</span>
+          <NumberInput :value="r.h" :min="10" @update:modelValue="u('h', Math.max(10,$event))" />
+        </div>
       </div>
     </XpPanel>
 
@@ -37,13 +49,10 @@
           <input type="checkbox" :checked="r.visible" @change="u('visible', $event.target.checked)" />
           Visible
         </label>
-        <label class="cb-row" :class="{ locked: r.locked }">
+        <label class="cb-row">
           <input type="checkbox" :checked="r.locked" @change="u('locked', $event.target.checked)" />
-          {{ r.locked ? '🔒 Locked' : 'Lock' }}
+          Lock
         </label>
-      </div>
-      <div v-if="r.locked" class="lock-warning">
-        Locked — uncheck to move or resize.
       </div>
     </XpPanel>
 
@@ -66,44 +75,122 @@ function u(key, val) { emit('update', { [key]: val }) }
 
 <style scoped>
 .ref-props { display: flex; flex-direction: column; gap: 2px; }
+
 .ref-header {
   display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
-  padding: 5px; background: #fff3d8; border: 1px solid #c89030;
+  padding: 5px; background: var(--bg3); border: 1px solid var(--border2);
 }
 .thumb {
-  width: 32px; height: 24px; border: 1px solid #a0a0a0;
+  width: 32px; height: 24px; border: 1px solid var(--border2);
   border-radius: 1px; overflow: hidden; flex-shrink: 0;
 }
-.ref-badge { font-family: 'Tahoma', sans-serif; font-size: 11px; font-weight: 700; color: #804000; }
+.ref-badge { font-family: 'Tahoma', sans-serif; font-size: 11px; font-weight: 700; color: var(--text0); }
+
 .xp-input {
   width: 100%; box-sizing: border-box;
   font-family: 'Tahoma', sans-serif; font-size: 11px; padding: 2px 4px;
-  background: #fff;
-  border-top: 1px solid #7f9db9; border-left: 1px solid #7f9db9;
-  border-right: 1px solid #c8d8e8; border-bottom: 1px solid #c8d8e8;
+  background: var(--bg0);
+  border: 1px solid var(--border2);
+  color: var(--text0);
   outline: none;
 }
-.xp-input:focus { border-color: #0a246a; }
+.xp-input:focus { border-color: var(--accent); }
+
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+
 .slider-row { display: flex; align-items: center; gap: 6px; }
-.slider { flex: 1; accent-color: #804000; }
-.slider-val { font-family: 'Tahoma', sans-serif; font-size: 11px; min-width: 30px; text-align: right; color: #804000; font-weight: 700; }
+.slider { flex: 1; accent-color: var(--accent); }
+.slider-val { font-family: 'Tahoma', sans-serif; font-size: 11px; min-width: 30px; text-align: right; color: var(--accent); font-weight: 700; }
+
 .checkboxes { display: flex; gap: 10px; flex-wrap: wrap; }
 .cb-row {
   display: flex; align-items: center; gap: 3px;
-  font-family: 'Tahoma', sans-serif; font-size: 11px; cursor: pointer;
+  font-family: 'Tahoma', sans-serif; font-size: 11px; color: var(--text1); cursor: pointer;
 }
-.cb-row.locked { color: #804000; font-weight: 700; }
+.cb-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+.cb-row.locked { color: var(--accent); font-weight: 700; }
+
 .lock-warning {
   margin-top: 4px; padding: 4px; font-family: 'Tahoma', sans-serif; font-size: 10px;
-  color: #804000; background: #fff3d8; border: 1px solid #c89030;
+  color: var(--accent); background: var(--accent-dim); border: 1px solid var(--accent);
 }
+
 .xp-btn {
-  font-family: 'Tahoma', sans-serif; font-size: 11px; padding: 3px 8px; cursor: pointer;
-  color: #000; background: linear-gradient(to bottom, #f5f5f5, #dfdfdf);
-  border-top: 1px solid #fff; border-left: 1px solid #fff;
-  border-right: 1px solid #848484; border-bottom: 1px solid #848484;
+  font-family: 'Tahoma', sans-serif; font-size: 10px; font-weight: 600; padding: 4px 8px; cursor: pointer;
+  color: var(--text1); background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
   outline: none; user-select: none;
+  transition: border-color 0.1s, color 0.1s, background 0.1s;
 }
-.xp-btn.danger { color: #a00; }
+.xp-btn:hover { background: var(--bg2); border-color: var(--accent); color: var(--text0); }
+.xp-btn:active { background: var(--bg0); border-color: #C80041; }
+.xp-btn.danger { color: var(--red); border-color: var(--red); }
+.xp-btn.danger:hover { background: rgba(204, 68, 68, 0.1); color: #ff6666; }
+
+.num-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 6px;
+  margin-bottom: 2px;
+}
+.num-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.num-label {
+  font-family: 'Tahoma', sans-serif;
+  font-size: 9px;
+  color: var(--text2);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.slider {
+  flex: 1;
+  min-width: 0;
+  max-width: 110px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg3);
+  outline: none;
+  flex: 1;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+.slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+.slider::-moz-range-track {
+  background: var(--bg3);
+  height: 4px;
+  border-radius: 2px;
+}
+.slider-val {
+  font-family: 'Tahoma', sans-serif;
+  font-size: 11px;
+  min-width: 30px;
+  text-align: right;
+  color: var(--accent);
+  font-weight: 700;
+}
+
 </style>
