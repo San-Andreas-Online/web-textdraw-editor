@@ -72,6 +72,7 @@ const props = defineProps({
   gridSize:  { type: Number,  default: 5 },
   bgImage:   { type: String,  default: null },
   bgOpacity: { type: Number,  default: 100 },
+  widescreen: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -89,12 +90,15 @@ const cvRef = ref(null)
 const canvasStyle = computed(() => ({
   width:  CW * props.zoom + 'px',
   height: CH * props.zoom + 'px',
+  ...(props.widescreen ? { transform: `scaleX(${16/9 / (4/3)})`, transformOrigin: 'top left' } : {})
 }))
 
-function canvasPos(e) {
+function canvasPos(e)
+{
   const r = cvRef.value.getBoundingClientRect()
+  const scaleX = props.widescreen ? (16/9) / (4/3) : 1
   return {
-    x: Math.round((e.clientX - r.left) / props.zoom),
+    x: Math.round((e.clientX - r.left) / props.zoom / scaleX),
     y: Math.round((e.clientY - r.top)  / props.zoom),
   }
 }

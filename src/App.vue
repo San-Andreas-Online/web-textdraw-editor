@@ -73,6 +73,7 @@
           :gridSize="gridSize"
           :bgImage="bgImg.bgImage.value"
           :bgOpacity="bgOpacity"
+          :widescreen="widescreen"
           @canvas-mousedown="onCanvasMD"
           @el-mousedown="onElMD"
           @el-resize-start="onElRS"
@@ -111,6 +112,8 @@
       :prefix="prefix"
       :isLocked="selOne?.locked ?? false"
       :isVisible="selOne?.visible ?? true"
+      :widescreen="widescreen"
+      @widescreen="widescreen = $event"
       @action="onCtxAction"
       @close="ctxPos = null"
       @grid="showGrid = $event"
@@ -151,6 +154,8 @@ import ExportModal from './components/modals/ExportModal.vue'
 import JsonModal from './components/modals/JsonModal.vue'
 import ContextMenu from './components/modals/ContextMenu.vue'
 import NotificationStack from './components/modals/NotificationStack.vue'
+
+const widescreen = ref(false);
 
 const store      = useElementStore()
 const snapUtil   = useSnap()

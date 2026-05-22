@@ -19,6 +19,10 @@
         <input type="checkbox" v-model="localSnap" @change="emit('snap', localSnap)" />
         Snap
       </label>
+      <label class="ctx-item cb-row" @mousedown.stop>
+        <input type="checkbox" :checked="widescreen" @change="emit('widescreen', $event.target.checked)" />
+        Widescreen
+      </label>
       <div class="ctx-sep" />
       <div class="ctx-item has-sub" ref="subTrigger">
         <span>Grid Size</span>
@@ -74,9 +78,10 @@ const props = defineProps({
   gridSize: Number,
   projName: String,
   prefix: String,
+  widescreen: Boolean,
 })
 
-const emit = defineEmits(['action', 'close', 'grid', 'snap', 'gridSize', 'update:projName', 'update:prefix'])
+const emit = defineEmits(['action', 'close', 'grid', 'snap', 'gridSize', 'update:projName', 'update:prefix', 'widescreen'])
 
 const localGrid = ref(props.showGrid)
 const localSnap = ref(props.snap)
