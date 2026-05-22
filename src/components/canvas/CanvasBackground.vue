@@ -32,9 +32,7 @@ const bgStyle = computed(() => {
   z-index: 0;
   background-color: #0e0e0e;
   background-image:
-    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(197, 29, 96, 0.23) 0%, transparent 70%),
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-  background-size: auto, 20px 20px, 20px 20px;
+    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(197, 29, 96, 0.23) 0%, transparent 70%);
+  background-size: auto;
 }
 </style>
