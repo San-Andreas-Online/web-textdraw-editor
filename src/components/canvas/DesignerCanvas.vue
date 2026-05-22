@@ -42,6 +42,9 @@
         </div>
 
         <MarqueeSelect :marquee="marquee" :zoom="zoom" />
+
+        <!-- Teleport target: selection outlines, name labels, resize handles always render here on top -->
+        <div id="selection-overlay" style="position:absolute;inset:0;pointer-events:none;z-index:9999;" />
       </div>
     </div>
   </div>
@@ -131,10 +134,36 @@ defineExpose({ canvasPos })
   position: absolute;
   inset: 0;
 }
-.drop-layer {
+
+:global(.sel-outline-global) {
+  position: absolute;
+  border: 50px dashed #0a246a;
+  box-sizing: border-box;
   pointer-events: none;
 }
-.drop-layer > * {
-  pointer-events: auto;
+:global(.name-label-global) {
+  position: absolute;
+  top: -16px;
+  left: 0;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: #000;
+  background: #ffffffd9;
+  padding: 1px 5px;
+  border-radius: 2px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+:global(.resize-handle-global) {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  bottom: -4px;
+  right: -4px;
+  background: #0a246a;
+  border: 1px solid #fff;
+  cursor: se-resize;
+  pointer-events: all;
 }
 </style>

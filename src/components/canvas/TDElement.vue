@@ -40,19 +40,17 @@
         <span :style="textStyle">{{ el.text || '_' }}</span>
       </div>
 
-      <!-- Selection outline -->
-      <div class="sel-outline" :class="{ active: selected }" />
-
-      <!-- Name label -->
-      <div v-if="selected" class="name-label" :style="nameLabelStyle">{{ el.locked ? '🔒 ' : '' }}{{ el.name }}</div>
-
-      <!-- Resize handle — never show on locked -->
-      <div
-        v-if="selected && !el.locked"
-        class="resize-handle"
-        @mousedown.stop="onResizeStart"
-      />
     </div>
+    <Teleport v-if="el.visible && selected" to="#selection-overlay">
+      <div class="sel-outline-global" :style="[wrapperStyle, { border: `${0.5 * props.zoom}px dashed #0a246a` }]">
+        <div class="name-label-global">{{ el.locked ? '🔒 ' : '' }}{{ el.name }}</div>
+        <div
+          v-if="!el.locked"
+          class="resize-handle-global"
+          @mousedown.stop="onResizeStart"
+        />
+      </div>
+    </Teleport>
   </template>
 
   <script setup>
@@ -67,7 +65,7 @@
     zoom:     { type: Number, default: 1 },
   })
 
-  const emit = defineEmits(['mousedown', 'resize-start'])
+  const emit = defineEmits(['mousedown', 'resize-start', 'contextmenu'])
 
   const imgFailed    = ref(false)
   const localPath    = ref(null)
@@ -87,13 +85,6 @@
     if (!lib || !tex) return null
     return localSpriteImagePath(lib, tex)
   })
-
-  const nameLabelStyle = computed(() => ({
-    fontSize: Math.round(3 * props.zoom) + 'px',
-    padding: `0px ${Math.round(3 * props.zoom)}px`,
-    top: -Math.round(3 * props.zoom) + 'px',
-    borderRadius: Math.round(0.5 * props.zoom) + 'px',
-  }))
 
   function onImgError() {
     if (!localPath.value) {
@@ -292,7 +283,6 @@
   }
 
   </script>
-
   <style scoped>
   .td-element {
     position: absolute;
@@ -341,43 +331,5 @@
   }
   .progress-wrap {
     display: block;
-  }
-  .sel-outline {
-    position: absolute;
-    inset: -1px;
-    border: 1px solid transparent;
-    pointer-events: none;
-    border-radius: 1px;
-  }
-  .sel-outline.active {
-    border: 3px dashed #0a246a;
-    box-shadow: 0 0 0 1px rgba(10,36,106,0.2);
-  }
-  .name-label {
-    position: absolute;
-    top: -16px;
-    left: 0;
-    font-family: 'Tahoma', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    color: #000000;
-    background: #ffffffd9;
-    padding: 1px 5px;
-    border-radius: 2px;
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 20;
-    letter-spacing: 0.3px;
-  }
-  .resize-handle {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    bottom: -4px;
-    right: -4px;
-    background: #0a246a;
-    border: 1px solid #fff;
-    cursor: se-resize;
-    z-index: 10;
   }
   </style>
