@@ -106,6 +106,7 @@ export function importPawn(code) {
         text: rawText,
         color: 0xFFFFFFFF,
         boxColor: 0x000000AA,
+        bgColor: 0x00000080,
         font: 0,
         align: 0,
         letterX: 0.2,
@@ -161,6 +162,9 @@ export function importPawn(code) {
     } else if (/(?:TextDraw|PlayerTextDraw)SetString/i.test(line)) {
       const m = line.match(/,\s*"(.*)"\s*\)/)
       if (m) current.text = m[1]
+    } else if (/(?:TextDraw|PlayerTextDraw)BackgroundColou?r/i.test(line)) {
+      const [raw] = extractLastArgs(line, 1)
+      current.bgColor = parseColor(raw)
     }
   }
 

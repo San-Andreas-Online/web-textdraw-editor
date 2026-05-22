@@ -226,7 +226,7 @@
       fontWeight:      '400',
       fontStyle:       'normal',
       textTransform:   props.el.font === 2 ? 'uppercase' : 'none',
-      textShadow:      props.el.outline > 0 ? `0 0 ${props.el.outline}px #000, 0 0 ${props.el.outline}px #000` : 'none',
+      textShadow: buildTextShadow(props.el.outline, props.el.shadow, props.el.bgColor, props.zoom),
       whiteSpace:      'nowrap',
       lineHeight:      '1',
       display:         'inline-block',
@@ -245,6 +245,30 @@
     if (e.button !== 0) return
     emit('resize-start', e, props.el)
   }
+
+  function buildTextShadow(outline, shadow, bgColor, zoom) {
+    const col = rgbaToCSS(bgColor ?? 0x000000FF)
+    const parts = []
+    if (outline > 0) {
+      const o = outline * 1 * zoom
+      parts.push(
+        `-${o}px -${o}px 0 ${col}`,
+        ` ${o}px -${o}px 0 ${col}`,
+        `-${o}px  ${o}px 0 ${col}`,
+        ` ${o}px  ${o}px 0 ${col}`,
+        `-${o}px 0   0 ${col}`,
+        ` ${o}px 0   0 ${col}`,
+        `0  -${o}px  0 ${col}`,
+        `0   ${o}px  0 ${col}`,
+      )
+    }
+    if (shadow > 0) {
+      const s = shadow * zoom
+      parts.push(`${s}px ${s}px 0 ${col}`)
+    }
+    return parts.length ? parts.join(', ') : 'none'
+  }
+
   </script>
 
   <style scoped>

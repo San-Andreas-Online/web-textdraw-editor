@@ -100,10 +100,14 @@
 
     <!-- Colors -->
     <XpPanel title="Colors">
-      <div class="color-label">Foreground / Text</div>
+      <div class="color-label">Text color</div>
       <ColorSwatch :modelValue="el.color" @update:modelValue="u('color', $event)" />
-      <div class="color-label" style="margin-top:6px">Box / Background</div>
+      <div class="color-label" style="margin-top:6px">Box color</div>
       <ColorSwatch :modelValue="el.boxColor" @update:modelValue="u('boxColor', $event)" />
+      <template v-if="el.type !== 'sprite'">
+        <div class="color-label" style="margin-top:6px">Background color</div>
+        <ColorSwatch :modelValue="el.bgColor ?? 0x00000080" @update:modelValue="u('bgColor', $event)" />
+      </template>
     </XpPanel>
 
   </div>

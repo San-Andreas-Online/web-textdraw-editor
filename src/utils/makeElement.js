@@ -3,7 +3,7 @@ function genId() {
 }
 
 const overrides = {
-  label:   { text: 'Label', color: 0xFFFFFFFF, w: 55,  h: 25, letterX: 0.60, letterY: 2.3 },
+  label:   { text: 'Label', color: 0xFFFFFFFF, w: 55,  h: 25, letterX: 0.60, letterY: 2.3, bgColor: 0x000000FF },
   button:  { text: 'BUTTON', color: 0xFFFFFFFF, boxColor: 0x004400DD, useBox: true, selectable: true, w: 100, h: 25, letterX: 0.50, letterY: 2, font: 2 },
   box:     { text: '_', color: 0xFFFFFFFF, boxColor: 0x111820EE, useBox: true, w: 160, h: 80, letterX: 0.2, letterY: 0.9 },
   sprite:  { text: 'hud:fist', color: 0xFFFFFFFF, font: 4, w: 50,  h: 50 },
@@ -21,6 +21,7 @@ export function makeElement(type, x = 255, y = 190) {
     isPlayer: true,
     color: 0xFFFFFFFF,
     boxColor: 0x000000AA,
+    bgColor: 0x00000080,
     font: 0,
     selectable: false,
     useBox: false,

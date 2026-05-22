@@ -49,6 +49,7 @@ export function exportPawn(els, prefix) {
     const txt = (el.text || '_').replace(/"/g, '\\"')
     const col = numToHex8(el.color)
     const box = numToHex8(el.boxColor)
+    const bg  = numToHex8(el.bgColor ?? 0x00000080)
 
     lines.push(`    // ${el.name} (${el.type})`)
 
@@ -76,6 +77,7 @@ export function exportPawn(els, prefix) {
       }
       if (el.outline > 0)  lines.push(`    TextDrawSetOutline(${ref}, ${el.outline});`)
       if (el.shadow > 0)   lines.push(`    TextDrawSetShadow(${ref}, ${el.shadow});`)
+      lines.push(`    TextDrawBackgroundColor(${ref}, ${bg});`)
       if (el.proportional) lines.push(`    TextDrawSetProportional(${ref}, 1);`)
       if (el.selectable)   lines.push(`    TextDrawSetSelectable(${ref}, 1);`)
     }
@@ -88,6 +90,7 @@ export function exportPawn(els, prefix) {
     const txt = (el.text || '_').replace(/"/g, '\\"')
     const col = numToHex8(el.color)
     const box = numToHex8(el.boxColor)
+    const bg  = numToHex8(el.bgColor ?? 0x00000080)
 
     lines.push(`    // ${el.name} (${el.type})`)
 
@@ -115,6 +118,7 @@ export function exportPawn(els, prefix) {
       }
       if (el.outline > 0)  lines.push(`    PlayerTextDrawSetOutline(playerid, ${ref}, ${el.outline});`)
       if (el.shadow > 0)   lines.push(`    PlayerTextDrawSetShadow(playerid, ${ref}, ${el.shadow});`)
+      lines.push(`    PlayerTextDrawBackgroundColor(playerid, ${ref}, ${bg});`)
       if (el.proportional) lines.push(`    PlayerTextDrawSetProportional(playerid, ${ref}, 1);`)
       if (el.selectable)   lines.push(`    PlayerTextDrawSetSelectable(playerid, ${ref}, 1);`)
     }
