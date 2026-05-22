@@ -40,12 +40,21 @@
         {{ item.label }}
       </div>
       <div class="ctx-sep" />
+      <label class="ctx-item cb-row" @mousedown.stop>
+        <input type="checkbox" :checked="isLocked" @change="emit('action', 'toggleLock')" />
+        Locked
+      </label>
+      <label class="ctx-item cb-row" @mousedown.stop>
+        <input type="checkbox" :checked="!isVisible" @change="emit('action', 'toggleVisible')" />
+        Hidden
+      </label>
+      <div class="ctx-sep" />
       <div class="ctx-item has-sub">
         <span>Send to</span>
         <span class="arrow" style="color:#FFFFFFFF">></span>
         <div class="ctx-sub">
           <div class="ctx-item" @mousedown.stop.prevent="emit('action', 'front'); emit('close')">Front</div>
-          <div class="ctx-item" @mousedown.stop.prevent="emit('action', 'back');  emit('close')">Back</div>
+          <div class="ctx-item" @mousedown.stop.prevent="emit('action', 'back'); emit('close')">Back</div>
         </div>
       </div>
     </template>
@@ -56,6 +65,8 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
+  isLocked: Boolean,
+  isVisible: Boolean,
   pos: Object,
   isCanvas: Boolean,
   showGrid: Boolean,

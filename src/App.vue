@@ -109,6 +109,8 @@
       :gridSize="gridSize"
       :projName="projName"
       :prefix="prefix"
+      :isLocked="selOne?.locked ?? false"
+      :isVisible="selOne?.visible ?? true"
       @action="onCtxAction"
       @close="ctxPos = null"
       @grid="showGrid = $event"
@@ -290,6 +292,8 @@ function onCtxAction(action) {
   else if (action === 'back')       store.sendToBack()
   else if (action === 'copyStyle')  onCopyStyle()
   else if (action === 'pasteStyle') onPasteStyle()
+  else if (action === 'toggleLock')    store.updEl(store.selOne.value.id, { locked: !store.selOne.value.locked })
+  else if (action === 'toggleVisible') store.updEl(store.selOne.value.id, { visible: !store.selOne.value.visible })
 }
 
 function onAddElement(type) {
