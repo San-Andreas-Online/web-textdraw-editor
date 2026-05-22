@@ -8,17 +8,21 @@
         <span class="logo-text"><em>TextDraw Designer</em></span>
       </div>
 
-      <div class="sep" />
-
-      <span class="bar-label">PROJECT</span>
-      <input class="bar-input" v-model="projName" style="width:120px" />
-
-      <div class="sep" />
-
-      <span class="bar-label">PREFIX</span>
-      <input class="bar-input" v-model="prefix" style="width:64px" />
-
       <div style="flex:1" />
+
+      <span class="bar-label">BG</span>
+      <input type="range" min="0" max="100" v-model.number="bgOpacity" class="slider" style="width:60px" />
+
+      <div class="sep" />
+
+      <span class="bar-label">Zoom</span>
+      <input type="range" min="50" max="500" step="10"
+        :value="Math.round((zoom-1)*100)"
+        @input="zoom = +$event.target.value/100+1"
+        class="slider" style="width:80px" />
+      <span class="zoom-val">{{ Math.round((zoom-1)*100) }}%</span>
+
+      <div class="sep" />
 
       <button class="btn" @click="store.undo()">Undo</button>
       <button class="btn" @click="store.redo()">Redo</button>
@@ -27,44 +31,6 @@
       <button class="btn primary" @click="onExport">Export Pawn</button>
     </div>
 
-    <!-- SECONDBAR -->
-    <div class="secondbar">
-      <label class="cb-row"><input type="checkbox" v-model="showGrid" />Grid</label>
-      <label class="cb-row"><input type="checkbox" v-model="snap" />Snap</label>
-
-      <select class="bar-input" v-model.number="gridSize" style="width:55px">
-        <option v-for="v in [1,2,5,10,20]" :key="v" :value="v">{{ v }}px</option>
-      </select>
-
-      <div class="sep-v" />
-
-      <span class="bar-label">BG</span>
-      <input type="range" min="0" max="100" v-model.number="bgOpacity" class="slider" style="width:60px" />
-
-      <div class="sep-v" />
-
-      <span class="bar-label">Zoom</span>
-      <input type="range" min="50" max="500" step="10"
-        :value="Math.round((zoom-1)*100)"
-        @input="zoom = +$event.target.value/100+1"
-        class="slider" style="width:80px" />
-      <span class="zoom-val">{{ Math.round((zoom-1)*100) }}%</span>
-      <button class="btn sm" @click="fitZoom">Fit</button>
-
-      <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
-        <span class="coord-display">
-          <span class="coord-axis">x</span><span class="coord-val">{{ mp.x }}</span>
-          <span class="coord-axis">y</span><span class="coord-val">{{ mp.y }}</span>
-        </span>
-        <span class="count-display">
-          <span class="coord-val">{{ elCount }}</span><span class="coord-axis"> el</span>
-          <span v-if="selArr.length"> · <span class="coord-val accent">{{ selArr.length }}</span><span class="coord-axis"> sel</span></span>
-        </span>
-        <span v-if="refs.length" class="count-display">
-          <span class="coord-val">{{ refs.length }}</span><span class="coord-axis"> ref</span>
-        </span>
-      </div>
-    </div>
 
     <!-- BODY -->
     <div class="body">
@@ -134,7 +100,23 @@
 
     <ExportModal :show="showExport" :code="exportCode" :prefix="prefix" @close="showExport = false" />
     <JsonModal :show="showJson" :json="jsonText" @close="showJson = false" @load="onJsonLoad" @load-pawn="onImportLoad" />
-    <ContextMenu v-if="ctxPos" :pos="ctxPos" @action="onCtxAction" @close="ctxPos = null" />
+    <ContextMenu
+      v-if="ctxPos"
+      :pos="ctxPos"
+      :isCanvas="ctxIsCanvas"
+      :showGrid="showGrid"
+      :snap="snap"
+      :gridSize="gridSize"
+      :projName="projName"
+      :prefix="prefix"
+      @action="onCtxAction"
+      @close="ctxPos = null"
+      @grid="showGrid = $event"
+      @snap="snap = $event"
+      @gridSize="gridSize = $event"
+      @update:projName="projName = $event"
+      @update:prefix="prefix = $event"
+    />
     <NotificationStack :notifs="notifs" />
   </div>
 </template>
@@ -287,10 +269,14 @@ function onUp(e) {
   refDrag.stop()
 }
 
-function onContextMenu(e, el) {
+const ctxIsCanvas = ref(false)
+
+function onContextMenu(e, el)
+{
   if (el) {
     if (!store.selected.value.has(el.id)) store.toggleSelect(el.id, false)
   }
+  ctxIsCanvas.value = !el
   ctxPos.value = { x: e.clientX, y: e.clientY }
 }
 
@@ -446,10 +432,6 @@ function onImportLoad(text) {
   } catch (e) {
     onNotify('Import failed: ' + e.message, 'error')
   }
-}
-
-function fitZoom() {
-  zoom.value = 2
 }
 
 function onReorder(dragId, targetId) {
