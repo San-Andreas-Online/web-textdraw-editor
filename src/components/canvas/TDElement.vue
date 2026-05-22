@@ -147,8 +147,21 @@
   const FONT_X_SCALE = [0.996, 0.9, 0.954, 1.0, 1.0]
   const FONT_BASELINE = [-0.057, -0.08, 0.2, 0.14, 0]
 
-  const FONT_OFFSET_Y = [-6, -7, -6, -6.5, 0]
-  const FONT_OFFSET_X = [1, -0.3, -1, 0.1, 0]
+  const FONT_OFFSET_X = [
+    [1, -49,-98],
+    [-0.3, -49, -99],
+    [-1, -50.5, -99],
+    [0.1, -50, -100],
+    [0, 0, 0],
+  ]
+
+  const FONT_OFFSET_Y = [
+    [-6,   -6,   -6  ],
+    [-7,   -7,   -7  ],
+    [-6,   -6,   -6  ],
+    [-6.5, -6.5, -6.5],
+    [0,    0,    0   ],
+  ]
   
 
   const FONT_WIDTH_SCALE = [1, 1.05, 1.05, 1.02, 1] // tweak per font index
@@ -169,9 +182,11 @@
     const isBox = props.el.type === 'box'
     const isSprite = props.el.type === 'sprite'
     const isText2 = props.el.type === 'label' || props.el.type === 'button'
-    const fontOffsetY = isText2 ? (FONT_OFFSET_Y[props.el.font] ?? 0) * props.zoom : 0
-    const fontOffsetX = isText2 ? (FONT_OFFSET_X[props.el.font] ?? 0) * props.zoom : 0
+    const align = props.el.align ?? 0
+    const fontOffsetY = isText2 ? ((FONT_OFFSET_Y[props.el.font]?.[align]) ?? 0) * props.zoom : 0
+    const fontOffsetX = isText2 ? ((FONT_OFFSET_X[props.el.font]?.[align]) ?? 0) * props.zoom : 0
     const fontOffsetW = isText2 ? (FONT_OFFSET_W[props.el.font] ?? 0) * props.zoom : 0
+
     return {
       left: (props.el.x * props.zoom) + (w < 0 ? w : 0) + (isBox ? -4 * props.zoom : 0) + fontOffsetX + 'px',
       top: (props.el.y * props.zoom) + (h < 0 ? h : 0) - (props.el.h * props.zoom * baselineShift * 0.3) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + fontOffsetY + 'px',
