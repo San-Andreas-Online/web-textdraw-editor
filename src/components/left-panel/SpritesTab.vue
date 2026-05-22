@@ -197,8 +197,10 @@ function onUpload(e) {
   flex-direction: column;
   align-items: center;
   aspect-ratio: 1;
+  overflow: hidden;
   transition: border-color 0.1s, background 0.1s;
 }
+
 .sprite-cell:hover {
   background: var(--bg3);
   border-color: var(--accent);
