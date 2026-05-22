@@ -87,7 +87,8 @@ export function importPawn(code) {
       const args = extractArgs(line)
       const coordsAndText = args.slice(args.length - 3)
 
-      const x = parseFloat(coordsAndText[0]) * INV_SX
+      const rawX = parseFloat(coordsAndText[0])
+      const x = rawX * INV_SX
       const y = parseFloat(coordsAndText[1]) + 3
       const rawText = coordsAndText[2].replace(/^"|"$/g, '')
 
@@ -100,6 +101,7 @@ export function importPawn(code) {
         locked: false,
         layer: elements.length,
         x, y,
+        _rawX: rawX,
         w: 100, h: 20,
         text: rawText,
         color: 0xFFFFFFFF,
@@ -170,8 +172,10 @@ export function importPawn(code) {
   for (const el of elements) {
     const tx = el._rawTextSizeX
     const ty = el._rawTextSizeY
+    const rawX = el._rawX
     delete el._rawTextSizeX
     delete el._rawTextSizeY
+    delete el._rawX
 
     if (el.type === 'sprite') {
       el.text = el.text.toLowerCase()
@@ -180,17 +184,8 @@ export function importPawn(code) {
       el.textSizeX = 0
       el.textSizeY = 0
     } else if (el.useBox && tx > 0) {
-
-      const x_s = el.x * SX
-      const y_s = el.y - 3
-      el.h = ty - y_s + 10
-      if (el.align === 1) {
-        el.w = tx * INV_SX
-      } else if (el.align === 2) {
-        // w is not encoded in TextSize for right-aligned; leave default
-      } else {
-        el.w = (tx - x_s + 5) * INV_SX
-      }
+      el.h = Math.round(el.letterY / 0.1154)
+      el.w = (tx - rawX + 5) * INV_SX
       el.textSizeX = 0
       el.textSizeY = 0
     } else {

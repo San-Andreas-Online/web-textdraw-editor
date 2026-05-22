@@ -140,21 +140,40 @@
   const FONT_X_SCALE = [0.996, 0.9, 0.954, 1.0, 1.0]
   const FONT_BASELINE = [-0.057, -0.08, 0.2, 0.14, 0]
 
+  const FONT_OFFSET_Y = [-6, -7, -6, -6.5, 0]
+  const FONT_OFFSET_X = [1, -0.3, -1, 0.1, 0]
+  
+
+  const FONT_WIDTH_SCALE = [1, 1.05, 1.05, 1.02, 1] // tweak per font index
+
+
+  const FONT_OFFSET_W = [0, 0, 0, 0, 0]
+
   const isText = computed(() =>
     props.el.type === 'label' || props.el.type === 'button'
   )
 
   const wrapperStyle = computed(() => {
-    const baselineShift = isText.value 
-      ? (FONT_BASELINE[props.el.font] ?? 0.72) 
+    const baselineShift = isText.value
+      ? (FONT_BASELINE[props.el.font] ?? 0.72)
       : 0
+    const w = props.el.w * props.zoom
+    const h = props.el.h * props.zoom
+    const isBox = props.el.type === 'box'
+    const isSprite = props.el.type === 'sprite'
+    const isText2 = props.el.type === 'label' || props.el.type === 'button'
+    const fontOffsetY = isText2 ? (FONT_OFFSET_Y[props.el.font] ?? 0) * props.zoom : 0
+    const fontOffsetX = isText2 ? (FONT_OFFSET_X[props.el.font] ?? 0) * props.zoom : 0
+    const fontOffsetW = isText2 ? (FONT_OFFSET_W[props.el.font] ?? 0) * props.zoom : 0
     return {
-      left:   props.el.x * props.zoom + 'px',
-      top:    (props.el.y * props.zoom) - (props.el.h * props.zoom * baselineShift * 0.3) + 'px',
-      width:  Math.max(props.el.w * props.zoom, 4) + 'px',
-      height: Math.max(props.el.h * props.zoom, 2) + 'px',
+      left: (props.el.x * props.zoom) + (w < 0 ? w : 0) + (isBox ? -4 * props.zoom : 0) + fontOffsetX + 'px',
+      top: (props.el.y * props.zoom) + (h < 0 ? h : 0) - (props.el.h * props.zoom * baselineShift * 0.3) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + fontOffsetY + 'px',
+      width: Math.max(Math.abs(w), 4) + (isBox ? 3 * props.zoom : 0) + fontOffsetW + 'px',
+      height: Math.max(Math.abs(h), 2) + (isBox ? 12 * props.zoom : 0) + 'px',
       cursor: props.el.locked ? 'not-allowed' : 'move',
       zIndex: (props.el.layer || 0) + 10,
+      transform: `scale(${w < 0 ? -1 : 1}, ${h < 0 ? -1 : 1})`,
+      transformOrigin: 'center center',
     }
   })
 
@@ -191,14 +210,15 @@
     }
   })
 
+
   const textStyle = computed(() => {
     const font = FONTS[props.el.font] || FONTS[0]
     const yScale = FONT_Y_SCALE[props.el.font] ?? 9.0
     const xScale = FONT_X_SCALE[props.el.font] ?? 1.0
     const fs = Math.max(6, props.el.letterY * yScale * props.zoom)
-    const scaleX = props.el.letterY > 0
+    const scaleX = (props.el.letterY > 0
       ? (props.el.letterX / props.el.letterY) * 3.75 * xScale
-      : xScale
+      : xScale) * (FONT_WIDTH_SCALE[props.el.font] ?? 1)
     return {
       color:           rgbaToCSS(props.el.color),
       fontSize:        fs + 'px',

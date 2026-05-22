@@ -36,8 +36,8 @@ export function useDrag(els, selected, snapV, CW, CH) {
       if (!origin) return el
       return {
         ...el,
-        x: Math.max(0, Math.min(CW - el.w, snapV(origin.x + dx))),
-        y: Math.max(0, Math.min(CH - el.h, snapV(origin.y + dy))),
+        x: snapV(origin.x + dx),
+        y: snapV(origin.y + dy),
       }
     })
   }

@@ -7,7 +7,7 @@ function calcTextSize(el) {
   if (el.type === 'sprite') {
     return { tx: el.w, ty: el.h }
   }
-  const rightY = el.y + el.h - 10.0
+  const rightY = el.y + el.h
   if (el.align === 1) return { tx: el.w, ty: rightY }
   if (el.align === 2) return { tx: el.x - 5.0, ty: rightY }
   return { tx: el.x + el.w - 5.0, ty: rightY }
@@ -60,7 +60,12 @@ export function exportPawn(els, prefix) {
     } else {
       lines.push(`    ${ref} = TextDrawCreate(${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
       lines.push(`    TextDrawFont(${ref}, ${el.font});`)
-      lines.push(`    TextDrawLetterSize(${ref}, ${el.letterX.toFixed(3)}, ${el.letterY.toFixed(3)});`)
+      if (['box', 'line', 'progress', 'hitbox'].includes(el.type)) {
+        const lY = parseFloat((el.h * 0.1154).toFixed(3))
+        lines.push(`    TextDrawLetterSize(${ref}, 0.000, ${lY});`)
+      } else {
+        lines.push(`    TextDrawLetterSize(${ref}, ${el.letterX.toFixed(3)}, ${el.letterY.toFixed(3)});`)
+      }
       lines.push(`    TextDrawColour(${ref}, ${col});`)
       lines.push(`    TextDrawAlignment(${ref}, ${el.align + 1});`)
       if (el.useBox) {
@@ -94,7 +99,12 @@ export function exportPawn(els, prefix) {
     } else {
       lines.push(`    ${ref} = CreatePlayerTextDraw(playerid, ${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
       lines.push(`    PlayerTextDrawFont(playerid, ${ref}, ${el.font});`)
-      lines.push(`    PlayerTextDrawLetterSize(playerid, ${ref}, ${el.letterX.toFixed(3)}, ${el.letterY.toFixed(3)});`)
+      if (['box', 'line', 'progress', 'hitbox'].includes(el.type)) {
+        const lY = parseFloat((el.h * 0.1154).toFixed(3))
+        lines.push(`    PlayerTextDrawLetterSize(playerid, ${ref}, 0.000, ${lY});`)
+      } else {
+        lines.push(`    PlayerTextDrawLetterSize(playerid, ${ref}, ${el.letterX.toFixed(3)}, ${el.letterY.toFixed(3)});`)
+      }
       lines.push(`    PlayerTextDrawColour(playerid, ${ref}, ${col});`)
       lines.push(`    PlayerTextDrawAlignment(playerid, ${ref}, ${el.align + 1});`)
       if (el.useBox) {

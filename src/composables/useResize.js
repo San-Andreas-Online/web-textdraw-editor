@@ -18,8 +18,8 @@ export function useResize(els, snapV) {
     els.value = els.value.map(el => {
       if (el.id !== resizeId.value) return el
 
-      const newW = Math.max(4, snapV(o.w + (pos.x - o.x)))
-      const newH = Math.max(2, snapV(o.h + (pos.y - o.y)))
+      const newW = snapV(o.w + (pos.x - o.x))
+      const newH = snapV(o.h + (pos.y - o.y))
 
 
       return { ...el, w: newW, h: newH }
