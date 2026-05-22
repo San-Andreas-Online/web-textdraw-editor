@@ -1,10 +1,19 @@
 <template>
   <div class="sprites-tab">
     <input class="xp-input" placeholder="Search..." v-model="search" />
-    <select class="xp-input" v-model="filterLib">
-      <option value="">All Libraries</option>
-      <option v-for="lib in libs" :key="lib" :value="lib">{{ lib }}</option>
-    </select>
+   <div class="font-select" :class="{ open: libOpen }" @click="libOpen = !libOpen">
+    <span>{{ filterLib === '' ? 'All Libraries' : filterLib }}</span>
+    <span class="font-arrow">▾</span>
+    <div class="font-dropdown" v-if="libOpen">
+    <div
+      class="font-option"
+      v-for="lib in libs"
+      :key="lib"
+      :class="{ active: filterLib === lib }"
+      @mousedown.prevent="filterLib = lib; libOpen = false"
+    >{{ lib }}</div>
+  </div>
+  </div>
 
     <div class="sprite-count">{{ filtered.length }} sprites</div>
 
@@ -32,9 +41,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
 import { KNOWN_SPRITES, spriteImagePath } from '../../constants/sprites'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
+
+const libOpen = ref(false)
 const emit = defineEmits(['insert-sprite', 'sprites-loaded'])
 
 const search = ref('')
@@ -53,6 +64,14 @@ const filtered = computed(() =>
       return { ...s, path: userImages.value[key] || spriteImagePath(s.lib, s.tex) }
     })
 )
+
+function onClickOutside(e)
+{
+  if (!e.target.closest('.font-select')) libOpen.value = false
+}
+
+onMounted(() => window.addEventListener('mousedown', onClickOutside))
+onUnmounted(() => window.removeEventListener('mousedown', onClickOutside))
 
 function onDragStart(e, s) {
   e.dataTransfer.setData('sprite', `${s.lib}:${s.tex}`)
@@ -266,4 +285,13 @@ function onUpload(e) {
   background: var(--bg0);
   border-color: #C80041;
 }
+
+.font-select { position:relative; display:flex; align-items:center; justify-content:space-between; padding:3px 6px; background:var(--bg0); border:1px solid var(--border2); cursor:pointer; font-size:11px; color:var(--text0); width:100%; box-sizing:border-box; }
+.font-select:hover { border-color:var(--accent); }
+.font-arrow { font-size:9px; color:var(--text2); margin-left:6px; }
+.font-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--bg2); border:1px solid var(--border2); z-index:999; box-shadow:2px 4px 12px rgba(0,0,0,0.6); max-height:200px; overflow-y:auto; }
+.font-option { padding:4px 8px; font-size:11px; cursor:pointer; color:var(--text0); }
+.font-option:hover { background:var(--accent-dim); }
+.font-option.active { color:var(--accent); }
+
 </style>

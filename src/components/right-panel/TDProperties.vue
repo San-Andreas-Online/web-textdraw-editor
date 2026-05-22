@@ -35,17 +35,36 @@
       <PropRow label="Text">
         <input class="xp-input" :value="el.text" @input="u('text', $event.target.value)" />
       </PropRow>
-      <PropRow label="Font">
-        <select class="xp-input" :value="el.font" @input="u('font', +$event.target.value)">
-          <option v-for="(n, i) in FONT_NAMES" :key="i" :value="i">{{ i }} – {{ n }}</option>
-        </select>
+      <PropRow v-if="el.type !== 'sprite'" label="Font">
+        <div class="font-select" :class="{ open: fontOpen }" @click="fontOpen = !fontOpen">
+          <span :style="{ fontFamily: FONTS[el.font]?.family }">{{ FONTS[el.font]?.name }}</span>
+          <span class="font-arrow">▾</span>
+          <div class="font-dropdown" v-if="fontOpen">
+            <div
+              class="font-option"
+              v-for="f in FONTS"
+              :key="f.id"
+              :class="{ active: el.font === f.id }"
+              :style="{ fontFamily: f.family }"
+              @mousedown.prevent="u('font', f.id); fontOpen = false"
+            >{{ f.name }}</div>
+          </div>
+        </div>
       </PropRow>
       <PropRow label="Align">
-        <select class="xp-input" :value="el.align" @input="u('align', +$event.target.value)">
-          <option :value="0">Left</option>
-          <option :value="1">Center</option>
-          <option :value="2">Right</option>
-        </select>
+        <div class="font-select" :class="{ open: alignOpen }" @click="alignOpen = !alignOpen">
+          <span>{{ ALIGN_OPTIONS[el.align]?.label }}</span>
+          <span class="font-arrow">▾</span>
+          <div class="font-dropdown" v-if="alignOpen">
+            <div
+              class="font-option"
+              v-for="a in ALIGN_OPTIONS"
+              :key="a.id"
+              :class="{ active: el.align === a.id }"
+              @mousedown.prevent="u('align', a.id); alignOpen = false"
+            >{{ a.label }}</div>
+          </div>
+        </div>
       </PropRow>
       <div class="num-grid">
         <div class="num-cell">
@@ -114,17 +133,38 @@
 </template>
 
 <script setup>
+import { FONTS } from '../../constants/fonts'
 import PropRow     from '../shared/PropRow.vue'
 import NumberInput from '../shared/NumberInput.vue'
 import ColorSwatch from '../shared/ColorSwatch.vue'
 import XpPanel     from '../shared/XpPanel.vue'
 import { FONT_NAMES } from '../../constants/fonts'
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 
+
+const fontOpen = ref(false)
 const props = defineProps({ el: { type: Object, required: true } })
 const emit  = defineEmits(['update'])
 
+const alignOpen = ref(false)
+const ALIGN_OPTIONS = [
+  { id: 0, label: 'Left' },
+  { id: 1, label: 'Center' },
+  { id: 2, label: 'Right' },
+]
+
 function u(key, val) { emit('update', { [key]: val }) }
+
+function onClickOutside(e)
+{
+  if (!e.target.closest('.font-select')) {
+    fontOpen.value = false
+    alignOpen.value = false
+  }
+}
+
+onMounted(() => window.addEventListener('mousedown', onClickOutside))
+onUnmounted(() => window.removeEventListener('mousedown', onClickOutside))
 
 const isText = computed(() => ['label', 'button', 'box', 'sprite'].includes(props.el.type))
 
@@ -283,4 +323,13 @@ const textFlags = computed(() => {
 .actions .xp-btn { flex: 1; }
 
 .cb-spacer { width: 100%; }
+
+.font-select { position:relative; display:flex; align-items:center; justify-content:space-between; padding:2px 6px; background:var(--bg0); border:1px solid var(--border2); border-radius:3px; cursor:pointer; font-size:11px; color:var(--text0); min-width:100px; }
+.font-select:hover { border-color:var(--accent); }
+.font-arrow { font-size:9px; color:var(--text2); margin-left:6px; }
+.font-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--bg2); border:1px solid var(--border2); border-radius:3px; z-index:999; box-shadow:2px 4px 12px rgba(0,0,0,0.6); }
+.font-option { padding:4px 8px; font-size:13px; cursor:pointer; color:var(--text0); }
+.font-option:hover { background:var(--accent-dim); color:var(--text0); }
+.font-option.active { color:var(--accent); }
+
 </style>
