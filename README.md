@@ -4,7 +4,19 @@ A web-based visual editor for creating SA-MP and open.mp TextDraws. Design your 
 
 ## Why this exists
 
-Most TextDraw editors are either in-game tools that require running a SA-MP server, or basic web tools with limited features. This one runs entirely in the browser, has a proper layer system, supports reference images for tracing, and exports clean Pawn code for both Global and Player TextDraws.
+Most TextDraw editors are either in-game tools that require running a SA-MP server, or basic web tools with limited features. This one runs entirely in the browser, has a proper layer system, supports multiple background images (layers) as a reference, and exports clean Pawn code for both Global and Player TextDraws.
+
+
+<div align="center">
+
+If you like this project, consider supporting us!
+
+[![PayPal](https://img.shields.io/badge/paypal-One%20Time%20Donation-003087?style=flat&logo=paypal)](https://paypal.me/MichaelAceAnderson)
+[![Patreon](https://img.shields.io/badge/patreon-Subscription-FF424D?style=flat&logo=patreon)](https://www.patreon.com/posts/san-andreas-open-153811828)
+
+
+</div>
+
 
 ---
 
