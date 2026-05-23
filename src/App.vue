@@ -481,7 +481,7 @@ useKeyboard({
         y: Math.max(0, Math.min(CH - el.h, el.y + dy)),
       }
     })
-    store.commit(next)
+    store.commitEls(next)  // was store.commit
   },
   nudgeRef: (id, dx, dy) => refImages.update(id, {
     x: (selRefObj.value?.x ?? 0) + dx,
