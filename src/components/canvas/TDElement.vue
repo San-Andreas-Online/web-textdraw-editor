@@ -137,7 +137,6 @@
         lines[lines.length - 1] = test
       }
     }
-    console.log('lines result:', lines)
     return lines
   }
 
@@ -179,7 +178,6 @@
 
   const wrappedLines = computed(() => {
     if (props.el.type !== 'label' && props.el.type !== 'button' && props.el.type !== 'box') return null
-    console.log('el type:', props.el.type)
     const font = FONTS[props.el.font] || FONTS[0]
     const yScale = FONT_Y_SCALE[props.el.font] ?? 9.0
     const xScale = FONT_X_SCALE[props.el.font] ?? 1.0
@@ -188,7 +186,6 @@
       ? (props.el.letterX / props.el.letterY) * 3.75 * xScale
       : xScale) * (FONT_WIDTH_SCALE[props.el.font] ?? 1)
     const maxWidth = (props.el.w * props.zoom) / scaleX * 0.96
-    console.log('maxWidth', maxWidth, 'zoom', props.zoom, 'w', props.el.w)
     return wrapText(props.el.text || '', font.family, fs, maxWidth)
   })
 
