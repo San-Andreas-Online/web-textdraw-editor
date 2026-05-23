@@ -278,6 +278,7 @@
 
   const textWrapStyle = computed(() => ({
     background: props.el.useBox ? rgbaToCSS(props.el.boxColor) : 'transparent',
+    justifyContent: props.el.align === 1 ? 'center' : props.el.align === 2 ? 'flex-end' : 'flex-start',
   }))
 
 
@@ -289,6 +290,13 @@
     const scaleX = (props.el.letterY > 0
       ? (props.el.letterX / props.el.letterY) * 3.75 * xScale
       : xScale) * (FONT_WIDTH_SCALE[props.el.font] ?? 1)
+
+    const alignOffset = props.el.align === 1
+      ? `translateX(${((scaleX - 1) / 2) * -100}%)`
+      : props.el.align === 2
+      ? `translateX(${((scaleX - 1)) * -100}%)`
+      : ''
+
     return {
       color:           rgbaToCSS(props.el.color),
       fontSize:        fs + 'px',
@@ -296,12 +304,12 @@
       fontWeight:      '400',
       fontStyle:       'normal',
       textTransform:   props.el.font === 2 ? 'uppercase' : 'none',
-      textShadow: buildTextShadow(props.el.outline, props.el.shadow, props.el.bgColor, props.zoom),
-      whiteSpace: 'nowrap',
+      textShadow:      buildTextShadow(props.el.outline, props.el.shadow, props.el.bgColor, props.zoom),
+      whiteSpace:      'nowrap',
       lineHeight:      '1',
-      display: wrappedLines.value?.length > 1 ? 'block' : 'inline-block',
-      transformOrigin: props.el.align === 1 ? 'center top' : props.el.align === 2 ? 'right top' : 'left top',
-      transform:       `scaleX(${scaleX}) scaleY(1)`,
+      display:         wrappedLines.value?.length > 1 ? 'block' : 'inline-block',
+      transformOrigin: 'left top',
+      transform:       `${alignOffset} scaleX(${scaleX})`,
     }
   })
 
