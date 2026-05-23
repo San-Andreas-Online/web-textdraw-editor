@@ -32,12 +32,18 @@
 
       <!-- Box / Line -->
       <div v-else-if="el.type === 'box' || el.type === 'line'" class="fill text-el" :style="textWrapStyle">
-        <span :style="textStyle">{{ el.text === '_' ? '' : el.text }}</span>
+        <div v-if="wrappedLines && wrappedLines.length > 1" class="wrapped-text">
+          <span v-for="(line, i) in wrappedLines" :key="i" :style="textStyle" class="wrapped-line">{{ line }}</span>
+        </div>
+        <span v-else :style="textStyle">{{ el.text === '_' ? '' : el.text }}</span>
       </div>
 
       <!-- Label / Button -->
       <div v-else class="fill text-el" :style="textWrapStyle">
-        <span :style="textStyle">{{ el.text || '_' }}</span>
+        <div v-if="wrappedLines && wrappedLines.length > 1" class="wrapped-text">
+          <span v-for="(line, i) in wrappedLines" :key="i" :style="textStyle" class="wrapped-line">{{ line }}</span>
+        </div>
+        <span v-else :style="textStyle">{{ el.text || '_' }}</span>
       </div>
 
     </div>
@@ -103,6 +109,38 @@
   watch(() => props.el.w,     () => drawTinted())
   watch(() => props.el.h,     () => drawTinted())
 
+
+  function measureTextWidth(text, fontFamily, fontSize, fontIndex)
+  {
+    const cv = document.createElement('canvas')
+    const ctx = cv.getContext('2d')
+    ctx.font = `400 ${fontSize}px '${fontFamily}'`
+    return ctx.measureText(text).width
+  }
+
+  function wrapText(text, fontFamily, fontSize, maxWidth)
+  {
+    const words = text.split(' ')
+    const lines = []
+
+    for (const word of words) {
+      if (lines.length === 0) {
+        lines.push(word)
+        continue
+      }
+      const last = lines[lines.length - 1]
+      const test = last + ' ' + word
+      const w = measureTextWidth(test, fontFamily, fontSize)
+      if (w > maxWidth) {
+        lines.push(word)
+      } else {
+        lines[lines.length - 1] = test
+      }
+    }
+    console.log('lines result:', lines)
+    return lines
+  }
+
   function drawTinted() {
     nextTick(() => {
       const img = spriteImgRef.value
@@ -134,9 +172,35 @@
     })
   }
 
+  
   const FONT_Y_SCALE = [8.85, 8.74, 8.75, 9.38, 9.0]
   const FONT_X_SCALE = [0.996, 0.9, 0.954, 1.0, 1.0]
   const FONT_BASELINE = [-0.057, -0.08, 0.2, 0.14, 0]
+
+  const wrappedLines = computed(() => {
+    if (props.el.type !== 'label' && props.el.type !== 'button' && props.el.type !== 'box') return null
+    console.log('el type:', props.el.type)
+    const font = FONTS[props.el.font] || FONTS[0]
+    const yScale = FONT_Y_SCALE[props.el.font] ?? 9.0
+    const xScale = FONT_X_SCALE[props.el.font] ?? 1.0
+    const fs = Math.max(6, props.el.letterY * yScale * props.zoom)
+    const scaleX = (props.el.letterY > 0
+      ? (props.el.letterX / props.el.letterY) * 3.75 * xScale
+      : xScale) * (FONT_WIDTH_SCALE[props.el.font] ?? 1)
+    const maxWidth = (props.el.w * props.zoom) / scaleX * 0.96
+    console.log('maxWidth', maxWidth, 'zoom', props.zoom, 'w', props.el.w)
+    return wrapText(props.el.text || '', font.family, fs, maxWidth)
+  })
+
+  const wrappedHeight = computed(() => {
+    if (!wrappedLines.value || wrappedLines.value.length <= 1) return null
+    const yScale = FONT_Y_SCALE[props.el.font] ?? 9.0
+    const fs = Math.max(6, props.el.letterY * yScale * props.zoom)
+    const isBox = props.el.type === 'box'
+    const contentHeight = wrappedLines.value.length * fs * 1.3 + (isBox ? 12 * props.zoom : 0)
+    const elHeight = Math.max(Math.abs(props.el.h * props.zoom), 2) + (isBox ? 12 * props.zoom : 0)
+    return Math.max(contentHeight, elHeight)
+  })
 
   const FONT_OFFSET_X = [
     [1, -49,-98],
@@ -155,7 +219,7 @@
   ]
   
 
-  const FONT_WIDTH_SCALE = [1, 1.05, 1.05, 1.02, 1] // tweak per font index
+  const FONT_WIDTH_SCALE = [1, 1.05, 1.05, 1.02, 1] 
 
 
   const FONT_OFFSET_W = [0, 0, 0, 0, 0]
@@ -215,13 +279,9 @@
     background: numToHex6(props.el.color),
   }))
 
-  const textWrapStyle = computed(() => {
-    const jc = props.el.align === 1 ? 'center' : props.el.align === 2 ? 'flex-end' : 'flex-start'
-    return {
-      background: props.el.useBox ? rgbaToCSS(props.el.boxColor) : 'transparent',
-      justifyContent: jc,
-    }
-  })
+  const textWrapStyle = computed(() => ({
+    background: props.el.useBox ? rgbaToCSS(props.el.boxColor) : 'transparent',
+  }))
 
 
   const textStyle = computed(() => {
@@ -240,9 +300,9 @@
       fontStyle:       'normal',
       textTransform:   props.el.font === 2 ? 'uppercase' : 'none',
       textShadow: buildTextShadow(props.el.outline, props.el.shadow, props.el.bgColor, props.zoom),
-      whiteSpace:      'nowrap',
+      whiteSpace: 'nowrap',
       lineHeight:      '1',
-      display:         'inline-block',
+      display: wrappedLines.value?.length > 1 ? 'block' : 'inline-block',
       transformOrigin: props.el.align === 1 ? 'center top' : props.el.align === 2 ? 'right top' : 'left top',
       transform:       `scaleX(${scaleX}) scaleY(1)`,
     }
@@ -330,6 +390,9 @@
     box-sizing: border-box;
   }
   .progress-wrap {
+    display: block;
+  }
+  .wrapped-line {
     display: block;
   }
   </style>
