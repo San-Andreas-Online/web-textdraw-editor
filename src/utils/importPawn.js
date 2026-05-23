@@ -193,9 +193,15 @@ export function importPawn(code) {
       el.textSizeX = 0
       el.textSizeY = 0
     } else {
+      el.h = Math.round(el.letterY * 10)
+      if (tx > 0) {
+        el.w = (tx - rawX) * INV_SX
+      } else {
+        // estimate from letter size × text length
+        el.w = Math.round(el.letterX * 21 * (el.text?.length || 5) * INV_SX)
+      }
       el.textSizeX = 0
       el.textSizeY = 0
-      if (el.type === 'label' || el.type === 'button') el.h = 25
     }
   }
 
