@@ -31,7 +31,10 @@ export function exportPawn(els, prefix) {
   const globals = sorted.filter(e => !e.isPlayer)
   const players = sorted.filter(e => e.isPlayer)
 
-  const lines = [`// SA-MP TextDraw Designer — ${new Date().toISOString()}`, '']
+  const now = new Date()
+  const date = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  const time = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  const lines = [`// TextDraw Designer sa-mp | ${date}, ${time}`, '']
 
   if (globals.length) {
     lines.push(`new Text:${prefix}_global[${globals.length}];`)
@@ -55,7 +58,7 @@ export function exportPawn(els, prefix) {
 
     if (el.type === 'sprite') {
       lines.push(`    ${ref} = TextDrawCreate(${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
-      lines.push(`    TextDrawFont(${ref}, TEXT_DRAW_FONT_SPRITE_DRAW);`)
+      lines.push(`    TextDrawFont(${ref}, 4);`)
       lines.push(`    TextDrawTextSize(${ref}, ${el.w.toFixed(1)}, ${el.h.toFixed(1)});`)
       lines.push(`    TextDrawColour(${ref}, ${col});`)
     } else {
@@ -96,7 +99,7 @@ export function exportPawn(els, prefix) {
 
     if (el.type === 'sprite') {
       lines.push(`    ${ref} = CreatePlayerTextDraw(playerid, ${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
-      lines.push(`    PlayerTextDrawFont(playerid, ${ref}, TEXT_DRAW_FONT_SPRITE_DRAW);`)
+      lines.push(`    PlayerTextDrawFont(playerid, ${ref}, 4);`)
       lines.push(`    PlayerTextDrawTextSize(playerid, ${ref}, ${el.w.toFixed(1)}, ${el.h.toFixed(1)});`)
       lines.push(`    PlayerTextDrawColour(playerid, ${ref}, ${col});`)
     } else {
