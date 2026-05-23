@@ -3,10 +3,6 @@
   <div v-if="pos" class="ctx" :style="{ left: pos.x + 'px', top: pos.y + 'px' }">
     <template v-if="isCanvas">
       <div class="ctx-row">
-        <span class="ctx-label">PROJECT</span>
-        <input class="ctx-input" :value="projName" @input="emit('update:projName', $event.target.value)" />
-      </div>
-      <div class="ctx-row">
         <span class="ctx-label">PREFIX</span>
         <input class="ctx-input" :value="prefix" @input="emit('update:prefix', $event.target.value)" />
       </div>
@@ -76,12 +72,11 @@ const props = defineProps({
   showGrid: Boolean,
   snap: Boolean,
   gridSize: Number,
-  projName: String,
   prefix: String,
   widescreen: Boolean,
 })
 
-const emit = defineEmits(['action', 'close', 'grid', 'snap', 'gridSize', 'update:projName', 'update:prefix', 'widescreen'])
+const emit = defineEmits(['action', 'close', 'grid', 'snap', 'gridSize', 'update:prefix', 'widescreen'])
 
 const localGrid = ref(props.showGrid)
 const localSnap = ref(props.snap)

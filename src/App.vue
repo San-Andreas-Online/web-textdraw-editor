@@ -108,7 +108,6 @@
       :showGrid="showGrid"
       :snap="snap"
       :gridSize="gridSize"
-      :projName="projName"
       :prefix="prefix"
       :isLocked="selOne?.locked ?? false"
       :isVisible="selOne?.visible ?? true"
@@ -119,7 +118,6 @@
       @grid="showGrid = $event"
       @snap="snap = $event"
       @gridSize="gridSize = $event"
-      @update:projName="projName = $event"
       @update:prefix="prefix = $event"
     />
     <NotificationStack :notifs="notifs" />
@@ -171,7 +169,6 @@ const refDrag = useRefDrag(refImages.refs, snapUtil.snapV)
 const snap     = snapUtil.snapEnabled
 const gridSize = snapUtil.gridSize
 
-const projName   = ref('New TextDraw')
 const prefix     = ref('td')
 const zoom       = ref(2)
 const showGrid   = ref(true)
