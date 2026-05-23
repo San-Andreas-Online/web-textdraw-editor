@@ -545,7 +545,11 @@ export const KNOWN_SPRITES = [
 ]
 
 export function spriteImagePath(lib, tex) {
-  return `https://assets.open.mp/assets/images/sprites/${lib}/${tex}.png`;
+  const isKnown = KNOWN_SPRITES.some(s => s.lib === lib && s.tex === tex)
+  if (isKnown) {
+    return `https://assets.open.mp/assets/images/sprites/${lib}/${tex}.png`
+  }
+  return `https://files.prineside.com/gtasa_samp_game_texture//png/${lib}.${tex}.png`
 }
 
 export function localSpriteImagePath(lib, tex) {
