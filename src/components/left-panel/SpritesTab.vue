@@ -52,12 +52,12 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 const libOpen = ref(false)
 const emit = defineEmits(['insert-sprite', 'sprites-loaded'])
 
-const search    = ref(localStorage.getItem('sprite_search') ?? '')
+const search    = ref('')
 const filterLib = ref(localStorage.getItem('sprite_filterLib') ?? '')
+watch(filterLib, v => localStorage.setItem('sprite_filterLib', v))
+
 const selected  = ref(null)
 
-watch(search,    v => localStorage.setItem('sprite_search', v))
-watch(filterLib, v => localStorage.setItem('sprite_filterLib', v))
 
 const userImages = ref({})
 
