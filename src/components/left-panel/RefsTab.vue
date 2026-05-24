@@ -35,7 +35,21 @@
       </div>
       <span class="ref-name">{{ r.name }}</span>
       <span class="icon" title="Toggle visibility" @click.stop="emit('toggle-ref-visible', r)">{{ r.visible ? '●' : '○' }}</span>
-      <span class="icon" :class="{ locked: r.locked }" title="Toggle lock" @click.stop="emit('toggle-ref-lock', r)">{{ r.locked ? '🔒' : '·' }}</span>
+      <span
+      class="icon lock-icon"
+      :class="{ active: r.locked }"
+      title="Toggle lock"
+      @click.stop="emit('toggle-ref-lock', r)"
+    >
+      <svg v-if="r.locked" width="10" height="11" viewBox="0 0 10 11" fill="none">
+        <rect x="1" y="5" width="8" height="6" rx="1" fill="currentColor"/>
+        <path d="M3 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" stroke-width="1.4" fill="none"/>
+      </svg>
+      <svg v-else width="10" height="11" viewBox="0 0 10 11" fill="none">
+        <rect x="1" y="5" width="8" height="6" rx="1" fill="currentColor" opacity="0.3"/>
+        <path d="M3 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" stroke-width="1.4" fill="none" opacity="0.3"/>
+      </svg>
+    </span>
       <span class="icon del" title="Delete" @click.stop="emit('delete-ref', r.id)">✕</span>
     </div>
 
@@ -237,4 +251,8 @@ function onRefUpload(e) {
   border: 1px solid var(--border2);
   margin-top: 4px;
 }
+.lock-icon { color: var(--text2); }
+.lock-icon.active { color: var(--red); }
+.ref-row.selected .lock-icon { color: var(--text1); }
+.ref-row.selected .lock-icon.active { color: #ff6666; }
 </style>

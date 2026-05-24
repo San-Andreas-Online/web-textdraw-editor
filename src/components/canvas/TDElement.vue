@@ -244,7 +244,7 @@
       top: (props.el.y * props.zoom) + (h < 0 ? h : 0) - (props.el.h * props.zoom * baselineShift * 0.3) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + fontOffsetY + 'px',
       width: Math.max(Math.abs(w), 4) + (isBox ? 3 * props.zoom : 0) + fontOffsetW + 'px',
       height: Math.max(Math.abs(h), 2) + (isBox ? 12 * props.zoom : 0) + 'px',
-      cursor: props.el.locked ? 'not-allowed' : 'move',
+      cursor: props.el.locked ? 'default' : 'move',
       zIndex: (props.el.layer || 0) + 10,
       transform: `scale(${w < 0 ? -1 : 1}, ${h < 0 ? -1 : 1})`,
       transformOrigin: 'center center',

@@ -38,7 +38,7 @@ const wrapperStyle = computed(() => ({
   width:   Math.max(props.r.w * props.zoom, 20) + 'px',
   height:  Math.max(props.r.h * props.zoom, 20) + 'px',
   opacity: props.r.opacity / 100,
-  cursor:  props.r.locked ? 'not-allowed' : 'move',
+  cursor: props.r.locked ? 'default' : 'move',
   outline: props.selected
     ? '1.5px dashed rgba(180,120,0,0.9)'
     : '1px dashed rgba(180,120,0,0.3)',
