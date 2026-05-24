@@ -1,12 +1,13 @@
 import { ref } from 'vue'
 
-export function useResize(els, snapV, snapResize, clearSnapLines)
+export function useResize(els, selected, snapV, snapResize, clearSnapLines)
 {
   const resizing = ref(false)
   const resizeId = ref(null)
   const resizeOrig = ref({})
 
-  function start(pos, el) {
+  function start(pos, el)
+  {
     resizing.value = true
     resizeId.value = el.id
     resizeOrig.value = { x: pos.x, y: pos.y, w: el.w, h: el.h }
@@ -17,12 +18,19 @@ export function useResize(els, snapV, snapResize, clearSnapLines)
     if (!resizing.value || !resizeId.value) return
     const o = resizeOrig.value
 
+    const rawW = o.w + (pos.x - o.x)
+    const rawH = o.h + (pos.y - o.y)
+
+    const primary = els.value.find(e => e.id === resizeId.value)
+    if (!primary) return
+
+    const { w, h } = snapResize({ ...primary, w: rawW, h: rawH }, els.value)
+    const dw = w - primary.w
+    const dh = h - primary.h
+
     els.value = els.value.map(el => {
-      if (el.id !== resizeId.value) return el
-      const rawW = o.w + (pos.x - o.x)
-      const rawH = o.h + (pos.y - o.y)
-      const { w, h } = snapResize({ ...el, w: rawW, h: rawH }, els.value)
-      return { ...el, w, h }
+      if (!selected.value.has(el.id)) return el
+      return { ...el, w: el.w + dw, h: el.h + dh }
     })
   }
 

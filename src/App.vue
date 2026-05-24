@@ -98,6 +98,7 @@
 
       <RightPanel
         :selOne="selOne"
+        :selArr="selArr"
         :selRefObj="selRefObj"
         @update-el="(id, patches) => onUpdateEl(id, patches)"
         @duplicate="store.duplicate"
@@ -108,6 +109,7 @@
         @copy-style="onCopyStyle"
         @paste-style="onPasteStyle"
         @batch-rename="onBatchRename"
+        @update-multi="onUpdateMulti"
       />
     </div>
 
@@ -174,7 +176,7 @@ const refImages  = useRefImages()
 const validation = useValidation(store.els)
 
 const drag = useDrag(store.els, store.selected, snapUtil.snapV, CW, CH, snapUtil.snapMode, snapUtil.snapElement, snapUtil.clearSnapLines)
-const resize = useResize(store.els, snapUtil.snapV, snapUtil.snapResize, snapUtil.clearSnapLines)
+const resize = useResize(store.els, store.selected, snapUtil.snapV, snapUtil.snapResize, snapUtil.clearSnapLines)
 const marquee = useMarquee(store.els, store.selected)
 const refDrag = useRefDrag(refImages.refs, snapUtil.snapV)
 
@@ -248,8 +250,9 @@ function onElMD(e, el) {
   if (!el.locked) drag.start(cvPos(e), store.selArr.value.includes(el.id) ? store.selArr.value : [el.id])
 }
 
-function onElRS(e, el) {
-  store.toggleSelect(el.id, false)
+function onElRS(e, el)
+{
+  if (!store.selected.value.has(el.id)) store.toggleSelect(el.id, false)
   refImages.clearSelection()
   resize.start(cvPos(e), el)
 }
@@ -478,7 +481,13 @@ function onReorder(dragId, targetId) {
   store.commitEls(next)
 }
 
-
+function onUpdateMulti(patches)
+{
+  const next = store.els.value.map(el =>
+    store.selected.value.has(el.id) ? { ...el, ...patches } : el
+  )
+  store.commitEls(next)
+}
 
 useKeyboard({
   undo: () => store.undo(),

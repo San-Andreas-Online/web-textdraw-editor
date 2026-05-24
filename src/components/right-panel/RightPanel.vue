@@ -1,13 +1,24 @@
 <template>
   <transition name="slide">
-    <div class="right-panel" v-if="selOne || selRefObj">
+    <div class="right-panel" v-if="selOne || selRefObj || selArr.length > 1">
       <div class="props-area">
         <div class="section-title">Properties</div>
 
         <TDProperties
           v-if="selOne"
           :el="selOne"
+          :selArr="selArr"
           @update="(patches) => emit('update-el', selOne.id, patches)"
+          @update-multi="(patches) => emit('update-multi', patches)"
+          @duplicate="emit('duplicate')"
+          @delete="emit('delete')"
+        />
+
+        <TDProperties
+          v-else-if="!selOne && !selRefObj && selArr.length > 1"
+          :el="{ color: 0, boxColor: 0, font: 0, align: 0 }"
+          :selArr="selArr"
+          @update-multi="(patches) => emit('update-multi', patches)"
           @duplicate="emit('duplicate')"
           @delete="emit('delete')"
         />
@@ -32,10 +43,11 @@ import FontReference from './FontReference.vue'
 defineProps({
   selOne:    { type: Object, default: null },
   selRefObj: { type: Object, default: null },
+  selArr:    { type: Array,  default: () => [] },
 })
 
 const emit = defineEmits([
-  'update-el', 'duplicate', 'delete',
+  'update-el', 'update-multi', 'duplicate', 'delete',
   'update-ref', 'delete-ref',
   'align', 'copy-style', 'paste-style', 'batch-rename',
 ])

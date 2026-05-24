@@ -1,133 +1,159 @@
 <template>
   <div class="td-props">
-    <!-- Name + Type -->
-    <PropRow label="Name">
-      <input class="xp-input" :value="el.name" @input="u('name', $event.target.value)" />
-    </PropRow>
-    <PropRow label="Type">
-      <span class="type-label">{{ el.type }}{{ el.locked ? ' 🔒' : ' ' }}</span>
-    </PropRow>
 
-    <!-- Transform -->
-    <XpPanel title="Transform">
-      <div class="num-grid">
-        <div class="num-cell">
-          <span class="num-label">X</span>
-          <NumberInput :value="el.x" :min="0" :max="640" @update:modelValue="u('x', $event)" />
-        </div>
-        <div class="num-cell">
-          <span class="num-label">Y</span>
-          <NumberInput :value="el.y" :min="0" :max="448" @update:modelValue="u('y', $event)" />
-        </div>
-        <div class="num-cell">
-          <span class="num-label">W</span>
-          <NumberInput :value="el.w" :min="1" @update:modelValue="u('w', Math.max(1,$event))" />
-        </div>
-        <div class="num-cell">
-          <span class="num-label">H</span>
-          <NumberInput :value="el.h" :min="1" @update:modelValue="u('h', Math.max(1,$event))" />
-        </div>
-      </div>
-    </XpPanel>
-
-    <!-- Text (label / button) -->
-    <XpPanel v-if="isText" title="Text">
+    <template v-if="isMulti">
+      <PropRow label="Name">
+        <input class="xp-input" placeholder="Enter name" @input="um('name', $event.target.value)" />
+      </PropRow>
       <PropRow label="Text">
-        <input class="xp-input" :value="el.text" @input="u('text', $event.target.value)" />
+        <input class="xp-input" placeholder="Enter text" @input="um('text', $event.target.value)" />
       </PropRow>
-      <PropRow v-if="el.type !== 'sprite'" label="Font">
-        <div class="font-select" :class="{ open: fontOpen }" @click="fontOpen = !fontOpen">
-          <span :style="{ fontFamily: FONTS[el.font]?.family }">{{ FONTS[el.font]?.name }}</span>
-          <span class="font-arrow">▾</span>
-          <div class="font-dropdown" v-if="fontOpen">
-            <div
-              class="font-option"
-              v-for="f in FONTS"
-              :key="f.id"
-              :class="{ active: el.font === f.id }"
-              :style="{ fontFamily: f.family }"
-              @mousedown.prevent="u('font', f.id); fontOpen = false"
-            >{{ f.name }}</div>
+
+      <XpPanel title="Style">
+        <PropRow label="Font">
+          <div class="font-select" :class="{ open: fontOpen }" @click="fontOpen = !fontOpen">
+            <span :style="{ fontFamily: multiFont !== null ? FONTS[multiFont]?.family : '' }">
+              {{ multiFont !== null ? FONTS[multiFont]?.name : 'Select' }}
+            </span>
+            <span class="font-arrow">▾</span>
+            <div class="font-dropdown" v-if="fontOpen">
+              <div class="font-option" v-for="f in FONTS" :key="f.id"
+                :style="{ fontFamily: f.family }"
+                @mousedown.prevent="multiFont = f.id; um('font', f.id); fontOpen = false"
+              >{{ f.name }}</div>
+            </div>
+          </div>
+        </PropRow>
+        <PropRow label="Align">
+          <div class="font-select" :class="{ open: alignOpen }" @click="alignOpen = !alignOpen">
+            <span>{{ multiAlign !== null ? ALIGN_OPTIONS[multiAlign]?.label : 'Select' }}</span>
+            <span class="font-arrow">▾</span>
+            <div class="font-dropdown" v-if="alignOpen">
+              <div class="font-option" v-for="a in ALIGN_OPTIONS" :key="a.id"
+                @mousedown.prevent="multiAlign = a.id; um('align', a.id); alignOpen = false"
+              >{{ a.label }}</div>
+            </div>
+          </div>
+        </PropRow>
+        <div class="num-grid" style="margin-top:4px">
+          <div class="num-cell">
+            <span class="num-label">LtrX</span>
+            <NumberInput :value="0" :step="0.005" :min="0" @update:modelValue="um('letterX', $event)" />
+          </div>
+          <div class="num-cell">
+            <span class="num-label">LtrY</span>
+            <NumberInput :value="0" :step="0.005" :min="0" @update:modelValue="um('letterY', $event)" />
           </div>
         </div>
-      </PropRow>
-      <PropRow label="Align">
-        <div class="font-select" :class="{ open: alignOpen }" @click="alignOpen = !alignOpen">
-          <span>{{ ALIGN_OPTIONS[el.align]?.label }}</span>
-          <span class="font-arrow">▾</span>
-          <div class="font-dropdown" v-if="alignOpen">
-            <div
-              class="font-option"
-              v-for="a in ALIGN_OPTIONS"
-              :key="a.id"
-              :class="{ active: el.align === a.id }"
-              @mousedown.prevent="u('align', a.id); alignOpen = false"
-            >{{ a.label }}</div>
+        <div class="num-grid" style="margin-top:4px">
+          <div class="num-cell">
+            <span class="num-label">Outline</span>
+            <NumberInput :value="0" :min="0" :max="8" @update:modelValue="um('outline', $event)" />
+          </div>
+          <div class="num-cell">
+            <span class="num-label">Shadow</span>
+            <NumberInput :value="0" :min="0" :max="8" @update:modelValue="um('shadow', $event)" />
           </div>
         </div>
-      </PropRow>
-      <div class="num-grid">
-        <div class="num-cell">
-          <span class="num-label">LtrX</span>
-          <NumberInput :value="el.letterX" :step="0.005" :min="0" @update:modelValue="u('letterX', $event)" />
-        </div>
-        <div class="num-cell">
-          <span class="num-label">LtrY</span>
-          <NumberInput :value="el.letterY" :step="0.005" :min="0" @update:modelValue="u('letterY', $event)" />
-        </div>
-        <div class="num-cell">
-          <span class="num-label">TxSzX</span>
-          <NumberInput :value="el.textSizeX" @update:modelValue="u('textSizeX', $event)" />
-        </div>
-        <div class="num-cell">
-          <span class="num-label">TxSzY</span>
-          <NumberInput :value="el.textSizeY" @update:modelValue="u('textSizeY', $event)" />
-        </div>
-        <div class="num-cell">
-          <span class="num-label">Outline</span>
-          <NumberInput :value="el.outline" :min="0" :max="8" @update:modelValue="u('outline', $event)" />
-        </div>
-        <div class="num-cell">
-          <span class="num-label">Shadow</span>
-          <NumberInput :value="el.shadow" :min="0" :max="8" @update:modelValue="u('shadow', $event)" />
-        </div>
-      </div>
+      </XpPanel>
+
+      <XpPanel title="Colors">
+        <div class="color-label">Text color</div>
+        <ColorSwatch :modelValue="multiColor" @update:modelValue="multiColor = $event; um('color', $event)" />
+        <div class="color-label" style="margin-top:6px">Box color</div>
+        <ColorSwatch :modelValue="multiBoxColor" @update:modelValue="multiBoxColor = $event; um('boxColor', $event)" />
+        <div class="color-label" style="margin-top:6px">Background color</div>
+        <ColorSwatch :modelValue="multiBgColor" @update:modelValue="multiBgColor = $event; um('bgColor', $event)" />
+      </XpPanel>
+
       <XpPanel title="Properties">
         <div class="checkboxes">
           <label v-for="[label, key] in textFlags" :key="key" class="cb-row">
-            <input type="checkbox" :checked="!!el[key]" @input="u(key, $event.target.checked)" />
+           <input type="checkbox"
+              :checked="multiFlags[key]"
+              @input="multiFlags[key] = $event.target.checked; um(key, $event.target.checked)"
+            />
             {{ label }}
           </label>
         </div>
       </XpPanel>
-    </XpPanel>
+    </template>
 
-    <!-- Sprite -->
-    <XpPanel v-if="el.type === 'sprite'" title="Sprite">
-      <PropRow label="lib:tex">
-        <input class="xp-input" :value="el.text" @input="u('text', $event.target.value)" />
+    <template v-else>
+      <PropRow label="Name">
+        <input class="xp-input" :value="el.name" @input="u('name', $event.target.value)" />
       </PropRow>
-    </XpPanel>
-
-    <!-- Progress -->
-    <XpPanel v-if="el.type === 'progress'" title="Progress">
-      <PropRow label="Value %">
-        <NumberInput :value="parseFloat(el.text) || 0" :min="0" :max="100"
-          @update:modelValue="u('text', String(Math.min(100, Math.max(0, $event))))" />
+      <PropRow label="Type">
+        <span class="type-label">{{ el.type }}{{ el.locked ? ' 🔒' : ' ' }}</span>
       </PropRow>
-    </XpPanel>
 
-    <!-- Colors -->
-    <XpPanel title="Colors">
-      <div class="color-label">Text color</div>
-      <ColorSwatch :modelValue="el.color" @update:modelValue="u('color', $event)" />
-      <div class="color-label" style="margin-top:6px">Box color</div>
-      <ColorSwatch :modelValue="el.boxColor" @update:modelValue="u('boxColor', $event)" />
-      <template v-if="el.type !== 'sprite'">
-        <div class="color-label" style="margin-top:6px">Background color</div>
-        <ColorSwatch :modelValue="el.bgColor ?? 0x00000080" @update:modelValue="u('bgColor', $event)" />
-      </template>
-    </XpPanel>
+      <XpPanel title="Transform">
+        <div class="num-grid">
+          <div class="num-cell"><span class="num-label">X</span><NumberInput :value="el.x" :min="0" :max="640" @update:modelValue="u('x', $event)" /></div>
+          <div class="num-cell"><span class="num-label">Y</span><NumberInput :value="el.y" :min="0" :max="448" @update:modelValue="u('y', $event)" /></div>
+          <div class="num-cell"><span class="num-label">W</span><NumberInput :value="el.w" :min="1" @update:modelValue="u('w', Math.max(1,$event))" /></div>
+          <div class="num-cell"><span class="num-label">H</span><NumberInput :value="el.h" :min="1" @update:modelValue="u('h', Math.max(1,$event))" /></div>
+        </div>
+      </XpPanel>
+
+      <XpPanel v-if="isText" title="Text">
+        <PropRow label="Text"><input class="xp-input" :value="el.text" @input="u('text', $event.target.value)" /></PropRow>
+        <PropRow v-if="el.type !== 'sprite'" label="Font">
+          <div class="font-select" :class="{ open: fontOpen }" @click="fontOpen = !fontOpen">
+            <span :style="{ fontFamily: FONTS[el.font]?.family }">{{ FONTS[el.font]?.name }}</span>
+            <span class="font-arrow">▾</span>
+            <div class="font-dropdown" v-if="fontOpen">
+              <div class="font-option" v-for="f in FONTS" :key="f.id" :class="{ active: el.font === f.id }" :style="{ fontFamily: f.family }" @mousedown.prevent="u('font', f.id); fontOpen = false">{{ f.name }}</div>
+            </div>
+          </div>
+        </PropRow>
+        <PropRow label="Align">
+          <div class="font-select" :class="{ open: alignOpen }" @click="alignOpen = !alignOpen">
+            <span>{{ ALIGN_OPTIONS[el.align]?.label }}</span>
+            <span class="font-arrow">▾</span>
+            <div class="font-dropdown" v-if="alignOpen">
+              <div class="font-option" v-for="a in ALIGN_OPTIONS" :key="a.id" :class="{ active: el.align === a.id }" @mousedown.prevent="u('align', a.id); alignOpen = false">{{ a.label }}</div>
+            </div>
+          </div>
+        </PropRow>
+        <div class="num-grid">
+          <div class="num-cell"><span class="num-label">LtrX</span><NumberInput :value="el.letterX" :step="0.005" :min="0" @update:modelValue="u('letterX', $event)" /></div>
+          <div class="num-cell"><span class="num-label">LtrY</span><NumberInput :value="el.letterY" :step="0.005" :min="0" @update:modelValue="u('letterY', $event)" /></div>
+          <div class="num-cell"><span class="num-label">TxSzX</span><NumberInput :value="el.textSizeX" @update:modelValue="u('textSizeX', $event)" /></div>
+          <div class="num-cell"><span class="num-label">TxSzY</span><NumberInput :value="el.textSizeY" @update:modelValue="u('textSizeY', $event)" /></div>
+          <div class="num-cell"><span class="num-label">Outline</span><NumberInput :value="el.outline" :min="0" :max="8" @update:modelValue="u('outline', $event)" /></div>
+          <div class="num-cell"><span class="num-label">Shadow</span><NumberInput :value="el.shadow" :min="0" :max="8" @update:modelValue="u('shadow', $event)" /></div>
+        </div>
+        <XpPanel title="Properties">
+          <div class="checkboxes">
+            <label v-for="[label, key] in textFlags" :key="key" class="cb-row">
+              <input type="checkbox" :checked="!!el[key]" @input="u(key, $event.target.checked)" />{{ label }}
+            </label>
+          </div>
+        </XpPanel>
+      </XpPanel>
+
+      <XpPanel v-if="el.type === 'sprite'" title="Sprite">
+        <PropRow label="lib:tex"><input class="xp-input" :value="el.text" @input="u('text', $event.target.value)" /></PropRow>
+      </XpPanel>
+
+      <XpPanel v-if="el.type === 'progress'" title="Progress">
+        <PropRow label="Value %">
+          <NumberInput :value="parseFloat(el.text) || 0" :min="0" :max="100" @update:modelValue="u('text', String(Math.min(100, Math.max(0, $event))))" />
+        </PropRow>
+      </XpPanel>
+
+      <XpPanel title="Colors">
+        <div class="color-label">Text color</div>
+        <ColorSwatch :modelValue="el.color" @update:modelValue="u('color', $event)" />
+        <div class="color-label" style="margin-top:6px">Box color</div>
+        <ColorSwatch :modelValue="el.boxColor" @update:modelValue="u('boxColor', $event)" />
+        <template v-if="el.type !== 'sprite'">
+          <div class="color-label" style="margin-top:6px">Background color</div>
+          <ColorSwatch :modelValue="el.bgColor ?? 0x00000080" @update:modelValue="u('bgColor', $event)" />
+        </template>
+      </XpPanel>
+    </template>
 
   </div>
 </template>
@@ -139,12 +165,39 @@ import NumberInput from '../shared/NumberInput.vue'
 import ColorSwatch from '../shared/ColorSwatch.vue'
 import XpPanel     from '../shared/XpPanel.vue'
 import { FONT_NAMES } from '../../constants/fonts'
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, reactive, onMounted, onUnmounted } from 'vue'
 
 
 const fontOpen = ref(false)
-const props = defineProps({ el: { type: Object, required: true } })
-const emit  = defineEmits(['update'])
+
+const props = defineProps({
+  el:     { type: Object, required: true },
+  selArr: { type: Array,  default: () => [] },
+})
+const emit = defineEmits(['update', 'update-multi', 'duplicate', 'delete'])
+
+const isMulti = computed(() => props.selArr.length > 1)
+function um(key, val) { emit('update-multi', { [key]: val }) }
+
+const multiFont  = ref(null)
+const multiAlign = ref(null)
+const multiColor = ref(0xFFFFFFFF)
+const multiBoxColor = ref(0x000000FF)
+const multiBgColor = ref(0x000000FF)
+
+const multiFlags = reactive({
+  proportional: false,
+  useBox: false,
+  selectable: false,
+  isPlayer: false,
+})
+
+watch(() => props.selArr, () => {
+  multiFont.value = null
+  multiAlign.value = null
+  multiBgColor.value = 0x00000080
+  Object.keys(multiFlags).forEach(k => multiFlags[k] = false)
+})
 
 const alignOpen = ref(false)
 const ALIGN_OPTIONS = [
