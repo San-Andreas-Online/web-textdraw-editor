@@ -140,7 +140,8 @@
     return lines
   }
 
-  function drawTinted() {
+  function drawTinted()
+  {
     nextTick(() => {
       const img = spriteImgRef.value
       const cv  = canvasRef.value
@@ -156,18 +157,25 @@
 
       if (a === 0) return
 
-      // draw image with alpha
       ctx.globalAlpha = a / 255
-      ctx.drawImage(img, 0, 0)
-      ctx.globalAlpha = 1
 
-      // tint only if not white
-      if (r !== 255 || g !== 255 || b !== 255) {
-        ctx.globalCompositeOperation = 'source-atop'
+      if (r === 255 && g === 255 && b === 255) {
+        // white = no tint
+        ctx.drawImage(img, 0, 0)
+      } else {
+        // draw tint color first
         ctx.fillStyle = `rgb(${r},${g},${b})`
         ctx.fillRect(0, 0, cv.width, cv.height)
+        // multiply image on top — dark pixels stay dark, light pixels get tinted
+        ctx.globalCompositeOperation = 'multiply'
+        ctx.drawImage(img, 0, 0)
+        // restore alpha from original image
+        ctx.globalCompositeOperation = 'destination-in'
+        ctx.drawImage(img, 0, 0)
         ctx.globalCompositeOperation = 'source-over'
       }
+
+      ctx.globalAlpha = 1
     })
   }
 
