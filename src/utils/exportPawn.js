@@ -1,23 +1,24 @@
 import { numToHex8 } from './colors'
 
 function calcTextSize(el) {
-  if (el.textSizeX > 0 || el.textSizeY > 0) {
-    return { tx: el.textSizeX, ty: el.textSizeY }
-  }
   if (el.type === 'sprite') {
     return { tx: el.w, ty: el.h }
   }
   const rightY = el.y + el.h
-  if (el.align === 1) return { tx: el.w, ty: rightY }
+  if (el.align === 1) return { tx: 0, ty: el.w }
   if (el.align === 2) return { tx: el.x - 5.0, ty: rightY }
+  if (el.textSizeX > 0 || el.textSizeY > 0) {
+    return { tx: el.textSizeX, ty: el.textSizeY }
+  }
   return { tx: el.x + el.w - 5.0, ty: rightY }
 }
 
 function scaleEl(el) {
   const sx = 640 / 592
+  const x = el.align === 1 ? (el.x + el.w / 2) * sx : el.x * sx
   return {
     ...el,
-    x: el.x * sx,
+    x,
     y: el.y - 3,
     w: el.w * sx,
     h: el.h,

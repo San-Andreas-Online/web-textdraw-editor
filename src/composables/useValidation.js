@@ -17,6 +17,9 @@ export function useValidation(els) {
 
       if (el.type === 'sprite' && !el.text.includes(':'))
         w.push({ type: 'err', msg: `${el.name}: sprite must use lib:tex format` })
+
+      if (el.align === 2 && el.useBox)
+        w.push({ type: 'warn', msg: `${el.name}: right aligned element with use box 'true' behaves weirdly in game and won't export accurately` })
     })
 
     return w

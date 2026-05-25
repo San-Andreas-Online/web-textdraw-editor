@@ -354,16 +354,29 @@ function onDeleteRef(id) {
   refImages.remove(id)
 }
 
-function onUpdateEl(id, patches) {
+function onUpdateEl(id, patches)
+{
   const el = store.els.value.find(e => e.id === id)
   if (!el) return store.updEl(id, patches)
 
-  const isText = el.type === 'label' || el.type === 'button'
   const merged = { ...patches }
+  const align = 'align' in patches ? patches.align : el.align
+  const w = 'w' in patches ? patches.w : el.w
+  const x = 'x' in patches ? patches.x : el.x
 
-  if (isText) {
-    if ('h' in patches) merged.letterY = parseFloat((patches.h * 0.135).toFixed(3))
-    if ('w' in patches) merged.textSizeX = el.x + patches.w
+  if ('h' in patches) merged.letterY = parseFloat((patches.h * 0.135).toFixed(3))
+
+  if ('w' in patches || 'align' in patches) {
+    if (align === 1) {
+      merged.textSizeX = 0
+      merged.textSizeY = w * 1.08125
+    } else if (align === 2) {
+      merged.textSizeX = x
+      merged.textSizeY = el.h
+    } else {
+      merged.textSizeX = x + w
+      merged.textSizeY = el.h
+    }
   }
 
   store.updEl(id, merged)

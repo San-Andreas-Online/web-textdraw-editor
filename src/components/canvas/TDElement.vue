@@ -24,18 +24,22 @@
 
       <!-- Box / Line -->
       <div v-else-if="el.type === 'box' || el.type === 'line'" class="fill text-el" :style="textWrapStyle">
-        <div v-if="wrappedLines && wrappedLines.length > 1" class="wrapped-text">
-          <span v-for="(line, i) in wrappedLines" :key="i" :style="textStyle" class="wrapped-line">{{ line }}</span>
+        <div :style="fontOffsetStyle">
+          <div v-if="wrappedLines && wrappedLines.length > 1" class="wrapped-text">
+            <span v-for="(line, i) in wrappedLines" :key="i" :style="textStyle" class="wrapped-line">{{ line }}</span>
+          </div>
+          <span v-else :style="textStyle">{{ el.text === '_' ? '' : el.text }}</span>
         </div>
-        <span v-else :style="textStyle">{{ el.text === '_' ? '' : el.text }}</span>
       </div>
 
       <!-- Label -->
       <div v-else class="fill text-el" :style="textWrapStyle">
-        <div v-if="wrappedLines && wrappedLines.length > 1" class="wrapped-text">
-          <span v-for="(line, i) in wrappedLines" :key="i" :style="textStyle" class="wrapped-line">{{ line }}</span>
+        <div :style="fontOffsetStyle">
+          <div v-if="wrappedLines && wrappedLines.length > 1" class="wrapped-text">
+            <span v-for="(line, i) in wrappedLines" :key="i" :style="textStyle" class="wrapped-line">{{ line }}</span>
+          </div>
+          <span v-else :style="textStyle">{{ el.text || '_' }}</span>
         </div>
-        <span v-else :style="textStyle">{{ el.text || '_' }}</span>
       </div>
 
     </div>
@@ -200,21 +204,53 @@
   })
 
   const FONT_OFFSET_X = [
-    [0, -26,-52],
-    [-1.2, -26.9, -53],
-    [-1.7, -28, -54],
-    [-1, -28, -54.1],
+    [1, 1,-52],
+    [0, 1, -53],
+    [0, 0.5, -54],
+    [0.3, 0.5, -54.1],
     [0, 0, 0],
   ]
 
   const FONT_OFFSET_Y = [
-    [-1,   -1,   -1  ],
-    [-2.5,   -3,   -3  ],
-    [-6,   -2,   -2  ],
-    [-2, -2.5, -2],
-    [0,    0,    0   ],
+    [4, 4.1, -1 ],
+    [3, 3, -3 ],
+    [1, 1, -2 ],
+    [1, 1, -2],
+    [0, 0, 0 ],
   ]
   
+
+  const BOX_OFFSET_X = [
+    [-1, -1, 0],
+    [-1, -1, 0],
+    [-1, -1, 0],
+    [-1, -1, 0],
+    [0, 0, 0],
+  ]
+
+  const BOX_OFFSET_Y = [
+    [-5, -5, 0],
+    [-5, -5, 0],
+    [-3, -3.5, 0],
+    [-4, -3.5, 0],
+    [0, 0, 0],
+  ]
+
+  const BOX_OFFSET_W = [
+    [-2, 2.5, 0],
+    [-2, 2.2, 0],
+    [-2, 2.2, 0],
+    [-2, 2.2, 0],
+    [0, 0, 0],
+  ]
+
+  const BOX_OFFSET_H = [
+    [5, 4, 0],
+    [5, 4, 0],
+    [3.6, 4, 0],
+    [5, 4, 0],
+    [0, 0, 0],
+  ]
 
   const FONT_WIDTH_SCALE = [1, 1.05, 1.05, 1.02, 1] 
 
@@ -226,29 +262,38 @@
   )
 
   const wrapperStyle = computed(() => {
-    const baselineShift = isText.value
-      ? (FONT_BASELINE[props.el.font] ?? 0.72)
-      : 0
     const w = props.el.w * props.zoom
     const h = props.el.h * props.zoom
     const isBox = props.el.type === 'box'
     const isSprite = props.el.type === 'sprite'
     const isText2 = props.el.type === 'label'
     const align = props.el.align ?? 0
-    const fontOffsetY = isText2 ? ((FONT_OFFSET_Y[props.el.font]?.[align]) ?? 0) * props.zoom : 0
-    const fontOffsetX = isText2 ? ((FONT_OFFSET_X[props.el.font]?.[align]) ?? 0) * props.zoom : 0
-    const fontOffsetW = isText2 ? (FONT_OFFSET_W[props.el.font] ?? 0) * props.zoom : 0
+    const baselineShift = isText2 ? (FONT_BASELINE[props.el.font] ?? 0.72) : 0
+
+    const boxOffsetX = isText2 ? ((BOX_OFFSET_X[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
+    const boxOffsetY = isText2 ? ((BOX_OFFSET_Y[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
+    const boxOffsetW = isText2 ? ((BOX_OFFSET_W[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
+    const boxOffsetH = isText2 ? ((BOX_OFFSET_H[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
+    const fontOffsetW = isText2 ? (FONT_OFFSET_W[props.el.font ?? 0] ?? 0) * props.zoom : 0
 
     return {
-      left: (props.el.x * props.zoom) + (w < 0 ? w : 0) + (isBox ? -4 * props.zoom : 0) + fontOffsetX + 'px',
-      top: (props.el.y * props.zoom) + (h < 0 ? h : 0) - (props.el.h * props.zoom * baselineShift * 0.3) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + fontOffsetY + 'px',
-      width: Math.max(Math.abs(w), 4) + (isBox ? 3 * props.zoom : 0) + fontOffsetW + 'px',
-      height: Math.max(Math.abs(h), 2) + (isBox ? 12 * props.zoom : 0) + 'px',
+      left:   (props.el.x * props.zoom) + (w < 0 ? w : 0) + (isBox ? -4 * props.zoom : 0) + boxOffsetX + 'px',
+      top:    (props.el.y * props.zoom) + (h < 0 ? h : 0) - (props.el.h * props.zoom * baselineShift * 0.3) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + boxOffsetY + 'px',
+      width:  Math.max(Math.abs(w), 4) + (isBox ? 3 * props.zoom : 0) + fontOffsetW + boxOffsetW + 'px',
+      height: Math.max(Math.abs(h), 2) + (isBox ? 12 * props.zoom : 0) + boxOffsetH + 'px',
       cursor: props.el.locked ? 'default' : 'move',
       zIndex: (props.el.layer || 0) + 10,
       transform: `scale(${w < 0 ? -1 : 1}, ${h < 0 ? -1 : 1})`,
       transformOrigin: 'center center',
     }
+  })
+
+  const fontOffsetStyle = computed(() => {
+    const align = props.el.align ?? 0
+    const isText2 = props.el.type === 'label'
+    const x = isText2 ? ((FONT_OFFSET_X[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
+    const y = isText2 ? ((FONT_OFFSET_Y[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
+    return { transform: `translate(${x}px, ${y}px)` }
   })
 
 
@@ -279,6 +324,11 @@
   const textWrapStyle = computed(() => ({
     background: props.el.useBox ? rgbaToCSS(props.el.boxColor) : 'transparent',
     justifyContent: props.el.align === 1 ? 'center' : props.el.align === 2 ? 'flex-end' : 'flex-start',
+    ...(props.el.useBox && props.el.align === 2 ? {
+      position: 'absolute',
+      left: -(props.el.x * props.zoom) + 'px',
+      width: (props.el.x + props.el.w + 3) * props.zoom + 'px',
+    } : {}),
   }))
 
 
@@ -389,6 +439,8 @@
     box-sizing: border-box;
   }
   .text-el {
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "clig" 0;
     display: flex;
     align-items: center;
     overflow: visible;

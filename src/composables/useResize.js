@@ -31,7 +31,14 @@ export function useResize(els, selected, snapV, snapResize, clearSnapLines)
     els.value = els.value.map(el => {
       if (!selected.value.has(el.id)) return el
       const newH = el.h + dh
-      return { ...el, w: el.w + dw, h: newH, letterY: parseFloat((Math.abs(newH) / 9.5).toFixed(3)) }
+      const newW = el.w + dw
+      return {
+        ...el,
+        w: newW, h: newH,
+        letterY: parseFloat((Math.abs(newH) / 9.5).toFixed(3)),
+        textSizeX: el.align === 1 ? 0 : el.align === 2 ? el.x : el.x + newW,
+        textSizeY: el.align === 1 ? newW * 1.08125 : el.h + dh,
+      }
     })
   }
 

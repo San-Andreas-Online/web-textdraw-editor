@@ -53,17 +53,17 @@ export function useDrag(els, selected, snapV, CW, CH, snapMode, snapElement, cle
       els.value = els.value.map(el => {
         const origin = dragOrigins.value[el.id]
         if (!origin) return el
-        return { ...el, x: Math.round(origin.x + dx + snapDX), y: Math.round(origin.y + dy + snapDY) }
+        const newX = Math.round(origin.x + dx + snapDX)
+        return { ...el, x: newX, y: Math.round(origin.y + dy + snapDY),
+          textSizeX: el.align === 1 ? 0 : el.align === 2 ? newX : newX + el.w }
       })
     } else {
       els.value = els.value.map(el => {
         const origin = dragOrigins.value[el.id]
         if (!origin) return el
-        return {
-          ...el,
-          x: snapV(origin.x + dx),
-          y: snapV(origin.y + dy),
-        }
+        const newX = snapV(origin.x + dx)
+        return { ...el, x: newX, y: snapV(origin.y + dy),
+          textSizeX: el.align === 1 ? 0 : el.align === 2 ? newX : newX + el.w }
       })
     }
   }
