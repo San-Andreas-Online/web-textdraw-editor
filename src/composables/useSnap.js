@@ -6,18 +6,39 @@ const BOX_OFFSET_Y = 4
 const BOX_OFFSET_W = 2.1
 const BOX_OFFSET_H = 12
 
+const LABEL_BOX_OFFSET_X = [-1, -1, -1, -1, 0]
+const LABEL_BOX_OFFSET_Y = [-5, -5, -3, -4, 0]
+const LABEL_BOX_OFFSET_W = [-2, -2, -2, -2, 0]
+const LABEL_BOX_OFFSET_H = [5, 5, 3.6, 5, 0]
+
 function visualBounds(el) {
   const isBox = el.type === 'box'
+  const isLabel = el.type === 'label'
+  const font = el.font ?? 0
   const x = el.w < 0 ? el.x + el.w : el.x
   const y = el.h < 0 ? el.y + el.h : el.y
   const w = Math.abs(el.w)
   const h = Math.abs(el.h)
-  return {
-    x: x - (isBox ? BOX_OFFSET_X : 0),
-    y: y - (isBox ? BOX_OFFSET_Y : 0),
-    w: w + (isBox ? BOX_OFFSET_W : 0),
-    h: h + (isBox ? BOX_OFFSET_H : 0),
+
+  if (isBox) {
+    return {
+      x: x - BOX_OFFSET_X,
+      y: y - BOX_OFFSET_Y,
+      w: w + BOX_OFFSET_W,
+      h: h + BOX_OFFSET_H,
+    }
   }
+
+  if (isLabel) {
+    return {
+      x: x + (LABEL_BOX_OFFSET_X[font] ?? 0),
+      y: y + (LABEL_BOX_OFFSET_Y[font] ?? 0),
+      w: w + (LABEL_BOX_OFFSET_W[font] ?? 0),
+      h: h + (LABEL_BOX_OFFSET_H[font] ?? 0),
+    }
+  }
+
+  return { x, y, w, h }
 }
 
 function findBestSnap(pairs)
@@ -82,7 +103,7 @@ export function useSnap() {
     }
 
     if (bestX) lines.push({ axis: 'x', value: bestX.line })
-    if (bestY) lines.push({ axis: 'y', value: bestY.line - BOX_OFFSET_H / 3 })
+    if (bestY) lines.push({ axis: 'y', value: bestY.line })
     snapLines.value = lines
 
     return {
@@ -125,7 +146,7 @@ export function useSnap() {
     }
 
     if (bestW) lines.push({ axis: 'x', value: bestW.line })
-    if (bestH) lines.push({ axis: 'y', value: bestH.line - BOX_OFFSET_H / 3 })
+    if (bestH) lines.push({ axis: 'y', value: bestH.line })
     snapLines.value = lines
 
     return {
