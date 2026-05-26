@@ -76,6 +76,7 @@
 
   const spritePath = computed(() => {
     if (props.el.type !== 'sprite') return null
+    if (props.el.spriteImg) return props.el.spriteImg
     const [lib, tex] = props.el.text.split(':')
     if (!lib || !tex) return null
     return spriteImagePath(lib, tex)

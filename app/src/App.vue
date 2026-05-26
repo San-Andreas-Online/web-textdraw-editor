@@ -50,9 +50,9 @@
         @contextmenu="onContextMenu"
         @insert-sprite="onInsertSprite"
         @notify="onNotify"
-        @upload-bg="bgImg.upload"
+        @upload-bg="onUploadBg"
         @remove-bg="bgImg.remove"
-        @upload-refs="refImages.upload"
+        @upload-refs="onUploadRefs"
         @select-ref="onSelectRef"
         @toggle-ref-visible="r => refImages.update(r.id, { visible: !r.visible })"
         @toggle-ref-lock="r => refImages.update(r.id, { locked: !r.locked })"
@@ -236,8 +236,8 @@ function onCanvasMD(e, pos) {
   marquee.start(pos)
 }
 
-function onSpriteDrop(text, pos) {
-  store.addEl('sprite', prefix.value, { text, x: pos.x, y: pos.y })
+function onSpriteDrop(text, pos, path) {
+  store.addEl('sprite', prefix.value, { text, x: pos.x, y: pos.y, spriteImg: path || null })
   onNotify(`Added ${text}`)
 }
 
@@ -331,7 +331,10 @@ function onAddPreset(preset) {
 }
 
 function onInsertSprite(s) {
-  store.addEl('sprite', prefix.value, { text: `${s.lib}:${s.tex}` })
+    store.addEl('sprite', prefix.value, { 
+    text: `${s.lib}:${s.tex}`,
+    spriteImg: s.path ?? null
+  })
   onNotify(`Added ${s.lib}:${s.tex}`)
 }
 
@@ -500,6 +503,16 @@ function onUpdateMulti(patches)
     store.selected.value.has(el.id) ? { ...el, ...patches } : el
   )
   store.commitEls(next)
+}
+
+function onUploadBg(e) {
+  const file = e?.target?.files?.[0] ?? e
+  if (file instanceof File) bgImg.upload(file)
+}
+
+function onUploadRefs(e) {
+  const files = e?.target?.files ?? e
+  if (files) refImages.upload(files)
 }
 
 useKeyboard({

@@ -1,6 +1,5 @@
 <template>
   <div class="left-panel">
-    <!-- Tabs -->
     <div class="tab-bar">
       <div
         v-for="tab in tabs"
@@ -11,7 +10,6 @@
       >{{ tab.label }}</div>
     </div>
 
-    <!-- Tab Content -->
     <AddTab
       v-if="activeTab === 'add'"
       @add-element="emit('add-element', $event)"
@@ -30,6 +28,7 @@
     />
     <SpritesTab
       v-else-if="activeTab === 'sprites'"
+      :txdSprites="txdStore.txdSprites"
       @insert-sprite="emit('insert-sprite', $event)"
       @sprites-loaded="emit('notify', `Loaded ${$event} sprite(s)`)"
     />
@@ -38,6 +37,7 @@
       :bgImage="bgImage"
       :refs="refs"
       :selRef="selRef"
+      :txdEntries="txdStore.txdEntries.value"
       @upload-bg="emit('upload-bg', $event)"
       @remove-bg="emit('remove-bg')"
       @upload-refs="emit('upload-refs', $event)"
@@ -45,9 +45,10 @@
       @toggle-ref-visible="emit('toggle-ref-visible', $event)"
       @toggle-ref-lock="emit('toggle-ref-lock', $event)"
       @delete-ref="emit('delete-ref', $event)"
+      @add-txd="e => { console.log('add-txd event:', e, e.file, e.modelId); txdStore.addTxd(e.file, e.modelId) }"
+      @remove-txd="id => txdStore.removeTxd(id)"
     />
 
-    <!-- Validation warnings -->
     <div v-if="warnings.length" class="warnings">
       <div class="warn-title">Validation</div>
       <div
@@ -66,6 +67,7 @@ import AddTab from './AddTab.vue'
 import LayersTab from './LayersTab.vue'
 import SpritesTab from './SpritesTab.vue'
 import RefsTab from './RefsTab.vue'
+import { useTxdStore } from '../../composables/useTxdStore'
 
 defineProps({
   sorted:   { type: Array,  default: () => [] },
@@ -86,6 +88,7 @@ const emit = defineEmits([
 ])
 
 const activeTab = ref('add')
+const txdStore = useTxdStore()
 
 const tabs = [
   { key: 'add',     label: 'Add'     },
@@ -106,7 +109,6 @@ const tabs = [
   overflow: hidden;
 }
 
-/* ── Tabs ── */
 .tab-bar {
   display: flex;
   flex-shrink: 0;
@@ -129,10 +131,7 @@ const tabs = [
   transition: color 0.1s, background 0.1s;
 }
 .tab:last-child { border-right: none; }
-.tab:hover {
-  background: var(--bg2);
-  color: var(--text1);
-}
+.tab:hover { background: var(--bg2); color: var(--text1); }
 .tab.active {
   background: var(--bg2);
   color: var(--accent);
@@ -140,7 +139,6 @@ const tabs = [
   margin-bottom: -1px;
 }
 
-/* ── Validation warnings ── */
 .warnings {
   border-top: 1px solid var(--border2);
   padding: 6px 8px;

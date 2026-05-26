@@ -128,8 +128,9 @@ function onCanvasMouseDown(e) {
 function onDrop(e) {
   const text = e.dataTransfer.getData('sprite')
   if (!text) return
+  const path = e.dataTransfer.getData('spritePath')
   const pos = canvasPos(e)
-  emit('sprite-drop', text, pos)
+  emit('sprite-drop', text, pos, path)
 }
 
 defineExpose({ canvasPos })
