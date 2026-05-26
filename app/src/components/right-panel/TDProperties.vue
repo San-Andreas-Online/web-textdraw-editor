@@ -11,7 +11,7 @@
 
       <XpPanel title="Style">
         <PropRow label="Font">
-          <div class="font-select" :class="{ open: fontOpen }" @click="fontOpen = !fontOpen">
+          <div class="font-select" :class="{ open: fontOpen }" @click="fontOpen = !fontOpen, alignOpen = false">
             <span :style="{ fontFamily: multiFont !== null ? FONTS[multiFont]?.family : '' }">
               {{ multiFont !== null ? FONTS[multiFont]?.name : 'Select' }}
             </span>
@@ -25,7 +25,7 @@
           </div>
         </PropRow>
         <PropRow label="Align">
-          <div class="font-select" :class="{ open: alignOpen }" @click="alignOpen = !alignOpen">
+          <div class="font-select" :class="{ open: alignOpen }" @click="alignOpen = !alignOpen, fontOpen = false">
             <span>{{ multiAlign !== null ? ALIGN_OPTIONS[multiAlign]?.label : 'Select' }}</span>
             <span class="font-arrow">▾</span>
             <div class="font-dropdown" v-if="alignOpen">
@@ -99,7 +99,7 @@
       <XpPanel v-if="isText" title="Text">
         <PropRow label="Text"><input class="xp-input" :value="el.text" @input="u('text', $event.target.value)" /></PropRow>
         <PropRow v-if="el.type !== 'sprite'" label="Font">
-          <div class="font-select" :class="{ open: fontOpen }" @click="fontOpen = !fontOpen">
+          <div class="font-select" :class="{ open: fontOpen }" @click="fontOpen = !fontOpen, alignOpen = false">
             <span :style="{ fontFamily: FONTS[el.font]?.family }">{{ FONTS[el.font]?.name }}</span>
             <span class="font-arrow">▾</span>
             <div class="font-dropdown" v-if="fontOpen">
@@ -108,7 +108,7 @@
           </div>
         </PropRow>
         <PropRow label="Align">
-          <div class="font-select" :class="{ open: alignOpen }" @click="alignOpen = !alignOpen">
+          <div class="font-select" :class="{ open: alignOpen }" @click="alignOpen = !alignOpen, fontOpen = false"">
             <span>{{ ALIGN_OPTIONS[el.align]?.label }}</span>
             <span class="font-arrow">▾</span>
             <div class="font-dropdown" v-if="alignOpen">
