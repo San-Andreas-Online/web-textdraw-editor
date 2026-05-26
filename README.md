@@ -23,21 +23,21 @@ If you like this project, consider supporting us!
 ## Screenshots
 
 ### Editor
-![Full editor view](https://i.imgur.com/pJ2rnWe.gif)
+![Full editor view](_docs/canvas.gif)
 The main canvas. Elements can be dragged, resized and selected individually or in a group. The left panel handles adding and organizing elements, the right panel shows properties for whatever is selected.
 
 ---
 ### Sprite Browser
 
 <div align="center">
-  <img src="https://i.imgur.com/6P53HGI.png" height="300"/>
+  <img src="_docs/sprites.png" height="300"/>
 </div>
 Browse all known GTA SA sprite libraries by name or filter by library.
 
 ---
 
 ### Pawn Export
-![Export modal](https://i.imgur.com/OdyZPtc.png)
+![Export modal](_docs/export.png)
 
 The export generates clean, ready-to-paste pawn code.
 
