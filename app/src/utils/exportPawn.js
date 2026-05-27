@@ -66,7 +66,9 @@ export function exportPawn(els, prefix) {
       lines.push(`    ${ref} = TextDrawCreate(${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
       lines.push(`    TextDrawFont(${ref}, ${el.font});`)
       const exportLY = el.h < 0 ? -Math.abs(el.letterY) : el.letterY
-      lines.push(`    TextDrawLetterSize(${ref}, ${el.letterX.toFixed(3)}, ${exportLY.toFixed(3)});`)
+      const isLabel = el.type === 'label'
+      const exportLX = isLabel && el.w < 0 ? -Math.abs(el.letterX) : el.letterX
+      lines.push(`    TextDrawLetterSize(${ref}, ${exportLX.toFixed(3)}, ${exportLY.toFixed(3)});`)
       lines.push(`    TextDrawColour(${ref}, ${col});`)
       lines.push(`    TextDrawAlignment(${ref}, ${el.align + 1});`)
       if (el.useBox) {
@@ -103,7 +105,9 @@ export function exportPawn(els, prefix) {
       lines.push(`    ${ref} = CreatePlayerTextDraw(playerid, ${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
       lines.push(`    PlayerTextDrawFont(playerid, ${ref}, ${el.font});`)
       const exportLY = el.h < 0 ? -Math.abs(el.letterY) : el.letterY
-      lines.push(`    PlayerTextDrawLetterSize(playerid, ${ref}, ${el.letterX.toFixed(3)}, ${exportLY.toFixed(3)});`)
+      const isLabel = el.type === 'label' || el.type === 'button'
+      const exportLX = isLabel && el.w < 0 ? -Math.abs(el.letterX) : el.letterX
+      lines.push(`    PlayerTextDrawLetterSize(playerid, ${ref}, ${exportLX.toFixed(3)}, ${exportLY.toFixed(3)});`)
       lines.push(`    PlayerTextDrawColour(playerid, ${ref}, ${col});`)
       lines.push(`    PlayerTextDrawAlignment(playerid, ${ref}, ${el.align + 1});`)
       if (el.useBox) {

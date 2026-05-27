@@ -118,6 +118,7 @@ export function importPawn(code) {
         selectable: false,
         _rawTextSizeX: 0,
         _rawTextSizeY: 0,
+        _flipped: false,
       }
       continue
     }
@@ -129,8 +130,9 @@ export function importPawn(code) {
       current.font = parseFont(raw)
     } else if (/(?:TextDraw|PlayerTextDraw)LetterSize/i.test(line)) {
       const [lx, ly] = extractLastArgs(line, 2)
-      current.letterX = parseFloat(lx)
+      current.letterX = Math.abs(parseFloat(lx))
       current.letterY = parseFloat(ly)
+      current._flipped = parseFloat(lx) < 0
     } else if (/(?:TextDraw|PlayerTextDraw)TextSize/i.test(line)) {
       const [tx, ty] = extractLastArgs(line, 2)
       current._rawTextSizeX = parseFloat(tx)
@@ -177,9 +179,11 @@ export function importPawn(code) {
     const tx = el._rawTextSizeX
     const ty = el._rawTextSizeY
     const rawX = el._rawX
+    const flipped = el._flipped
     delete el._rawTextSizeX
     delete el._rawTextSizeY
     delete el._rawX
+    delete el._flipped
 
     if (el.type === 'sprite') {
       el.text = el.text.toLowerCase()
@@ -188,20 +192,20 @@ export function importPawn(code) {
       el.textSizeX = 0
       el.textSizeY = 0
     } else if (el.useBox && tx > 0) {
-        el.h = Math.round(el.letterY / 0.1154)
-        el.w = (tx - rawX + 5) * INV_SX
-      } else if (el.useBox && el.align === 1 && ty > 0) {
-        el.h = Math.round(el.letterY / 0.1154)
-        el.w = (ty / 1.08125) * INV_SX
-        el.x = (rawX * INV_SX) - (el.w / 2)
-        el.textSizeX = 0
-        el.textSizeY = ty
-      } else if (el.useBox && tx > 0) {
-        el.h = Math.round(el.letterY / 0.1154)
-        el.w = ty * INV_SX
-        el.textSizeX = 0
-        el.textSizeY = 0
-      } else {
+      el.h = Math.round(el.letterY / 0.1154)
+      el.w = (tx - rawX + 5) * INV_SX
+    } else if (el.useBox && el.align === 1 && ty > 0) {
+      el.h = Math.round(el.letterY / 0.1154)
+      el.w = (ty / 1.08125) * INV_SX
+      el.x = (rawX * INV_SX) - (el.w / 2)
+      el.textSizeX = 0
+      el.textSizeY = ty
+    } else if (el.useBox && tx > 0) {
+      el.h = Math.round(el.letterY / 0.1154)
+      el.w = ty * INV_SX
+      el.textSizeX = 0
+      el.textSizeY = 0
+    } else {
       el.h = Math.round(el.letterY * 10)
       if (tx > 0) {
         el.w = (tx - rawX) * INV_SX
@@ -212,6 +216,8 @@ export function importPawn(code) {
       el.textSizeX = 0
       el.textSizeY = 0
     }
+
+    if (flipped) el.w = -Math.abs(el.w)
   }
 
   return elements
