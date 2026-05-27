@@ -787,11 +787,14 @@ body { overflow: hidden; }
   display: flex;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .canvas-wrap {
   flex: 1;
-  background: #1a1a1a;
-  overflow: auto;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
 }
 </style>

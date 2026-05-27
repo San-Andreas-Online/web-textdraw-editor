@@ -140,6 +140,8 @@ defineExpose({ canvasPos })
 .canvas-scroll {
   flex: 1;
   background: var(--bg0);
+  width: 100%;
+  height: 100%;
   overflow: auto;
 }
 .canvas-padding {
