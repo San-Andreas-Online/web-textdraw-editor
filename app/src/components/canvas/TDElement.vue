@@ -181,6 +181,8 @@
   const FONT_X_SCALE = [0.996, 0.9, 0.954, 1.0, 1.0]
   const FONT_BASELINE = [-0.057, -0.08, 0.2, 0.14, 0]
 
+  const FONT_WRAP_TOLERANCE = [0.96, 0.96, 1.15, 1.15, 0.96]
+
   const wrappedLines = computed(() => {
     if (props.el.type !== 'label' && props.el.type !== 'box') return null
     const font = FONTS[props.el.font] || FONTS[0]
@@ -190,7 +192,7 @@
     const scaleX = (props.el.letterY > 0
       ? (props.el.letterX / props.el.letterY) * 3.75 * xScale
       : xScale) * (FONT_WIDTH_SCALE[props.el.font] ?? 1)
-    const maxWidth = (props.el.w * props.zoom) / scaleX * 0.96
+    const maxWidth = (props.el.w * props.zoom) / scaleX * (FONT_WRAP_TOLERANCE[props.el.font] ?? 0.96)
     return wrapText(props.el.text || '', font.family, fs, maxWidth)
   })
 
@@ -205,52 +207,52 @@
   })
 
   const FONT_OFFSET_X = [
-    [1, 1,-52],
-    [0, 1, -53],
-    [0, 0.5, -54],
-    [0.3, 0.5, -54.1],
+    [1.0, 1.0, 0.1],
+    [0.0, 1.0, -0.5],
+    [0.0, 0.5, -0.5],
+    [0.3, 0.5, -1],
     [0, 0, 0],
   ]
 
   const FONT_OFFSET_Y = [
-    [4, 4.1, -1 ],
-    [3, 3, -3 ],
-    [1, 1, -2 ],
-    [1, 1, -2],
-    [0, 0, 0 ],
+    [4.0, 4.1, 2.9],
+    [3.0, 3.0, 2.3],
+    [1.0, 1.0, 1.0],
+    [1.0, 1.0, 1.0],
+    [0.0, 0.0, ],
   ]
   
 
   const BOX_OFFSET_X = [
-    [-1, -1, 0],
-    [-1, -1, 0],
-    [-1, -1, 0],
-    [-1, -1, 0],
+    [-1.0, -1.0, -71.5],
+    [-1.0, -1.0, -71.5],
+    [-1.0, -1.0, -71.5],
+    [-1.0, -1.0, -71.5],
     [0, 0, 0],
   ]
 
   const BOX_OFFSET_Y = [
-    [-5, -5, 0],
-    [-5, -5, 0],
-    [-3, -3.5, 0],
-    [-4, -3.5, 0],
+    [-5.0, -5.0, -5.0],
+    [-5.0, -5.0, -5.0],
+    [-3.0, -3.5, -3.5],
+    [-4.0, -3.5, -4],
     [0, 0, 0],
   ]
 
   const BOX_OFFSET_W = [
-    [-2, 2.5, 0],
-    [-2, 2.2, 0],
-    [-2, 2.2, 0],
-    [-2, 2.2, 0],
+    [-2, 2.5, 3.0],
+    [-2, 2.2, 3.0],
+    [-2, 2.2, 3.0],
+    [-2, 2.2, 3.0],
     [0, 0, 0],
   ]
 
   const BOX_OFFSET_H = [
-    [5, 4, 0],
-    [5, 4, 0],
-    [3.6, 4, 0],
-    [5, 4, 0],
-    [0, 0, 0],
+    [5.0, 4.0, 2.0],
+    [5.0, 4.0, 2.0],
+    [3.6, 4.0, 2.0],
+    [5.0, 4.0, 2.0],
+    [0.0, 0.0, 0.0],
   ]
 
   const FONT_WIDTH_SCALE = [1, 1.05, 1.05, 1.02, 1] 
