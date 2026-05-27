@@ -545,13 +545,21 @@ export const KNOWN_SPRITES = [
 ]
 
 export function spriteImagePath(lib, tex) {
-  const isKnown = KNOWN_SPRITES.some(s => s.lib === lib && s.tex === tex)
-  if (isKnown) {
-    return `https://assets.open.mp/assets/images/sprites/${lib}/${tex}.png`
+  const libL = lib.toLowerCase()
+  const texL = tex.toLowerCase()
+  const known = KNOWN_SPRITES.find(s => s.lib.toLowerCase() === libL && s.tex.toLowerCase() === texL)
+  if (known) {
+    return `https://assets.open.mp/assets/images/sprites/${known.lib}/${known.tex}.png`
   }
   return `https://files.prineside.com/gtasa_samp_game_texture//png/${lib}.${tex}.png`
 }
 
 export function localSpriteImagePath(lib, tex) {
-  return `sprites/${lib}/${tex}.png`;
+  const libL = lib.toLowerCase()
+  const texL = tex.toLowerCase()
+  const known = KNOWN_SPRITES.find(s => s.lib.toLowerCase() === libL && s.tex.toLowerCase() === texL)
+  if (known) {
+    return `sprites/${known.lib}/${known.tex}.png`
+  }
+  return `sprites/${lib}/${tex}.png`
 }

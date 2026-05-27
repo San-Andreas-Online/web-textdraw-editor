@@ -97,9 +97,10 @@
     }
   }
 
-  watch(() => props.el.text, () => {
+  watch(spritePath, () => {
     imgFailed.value = false
     localPath.value = null
+    nextTick(() => drawTinted())
   })
 
   watch(() => props.el.color, () => drawTinted())

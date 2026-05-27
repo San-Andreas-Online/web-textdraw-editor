@@ -363,6 +363,11 @@ function onUpdateEl(id, patches)
   if (!el) return store.updEl(id, patches)
 
   const merged = { ...patches }
+
+  if ('text' in patches && el.type === 'sprite') {
+    merged.spriteImg = null
+  }
+
   const align = 'align' in patches ? patches.align : el.align
   const w = 'w' in patches ? patches.w : el.w
   const x = 'x' in patches ? patches.x : el.x

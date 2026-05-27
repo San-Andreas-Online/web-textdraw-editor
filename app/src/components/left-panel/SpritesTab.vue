@@ -32,7 +32,13 @@
         @dragstart="e => onDragStart(e, s)"
         @click="selected = s"
       >
-        <img v-if="s.path" :src="s.path" class="sprite-img" draggable="false" />
+        <img 
+          v-if="s.path" 
+          :src="s.path" 
+          class="sprite-img" 
+          draggable="false"
+          @error="e => { if (!e.target.dataset.triedLocal) { e.target.dataset.triedLocal = '1'; e.target.src = localSpriteImagePath(s.lib, s.tex) } else { e.target.style.display='none' } }"
+        />
           <div v-else class="sprite-text txd-text">
             {{ s.lib }}<br />
             <strong>{{ s.tex }}</strong>
@@ -54,7 +60,7 @@
 </template>
 
 <script setup>
-import { KNOWN_SPRITES, spriteImagePath } from '../../constants/sprites'
+import { KNOWN_SPRITES, spriteImagePath, localSpriteImagePath } from '../../constants/sprites'
 import { ref, computed, isRef, watch, onMounted, onUnmounted } from 'vue'
 
 
@@ -120,7 +126,7 @@ function onDragStart(e, s) {
   e.dataTransfer.effectAllowed = 'copy'
 
   const img = e.currentTarget.querySelector('img')
-  if (img) {
+  if (img && img.complete && img.naturalWidth > 0) {
     const size = 48
     const cv = document.createElement('canvas')
     cv.width = size; cv.height = size
