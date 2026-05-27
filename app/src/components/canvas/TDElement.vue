@@ -266,23 +266,24 @@
   )
 
   const wrapperStyle = computed(() => {
+    const snap = (val) => Math.round(val * 4) / 4
     const w = props.el.w * props.zoom
     const h = props.el.h * props.zoom
-    const isBox = props.el.type === 'box'
+    const isBox    = props.el.type === 'box'
     const isSprite = props.el.type === 'sprite'
-    const isText2 = props.el.type === 'label'
-    const align = props.el.align ?? 0
+    const isText2  = props.el.type === 'label'
+    const align    = props.el.align ?? 0
     const baselineShift = isText2 ? (FONT_BASELINE[props.el.font] ?? 0.72) : 0
 
-    const boxOffsetX = isText2 ? ((BOX_OFFSET_X[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
-    const boxOffsetY = isText2 ? ((BOX_OFFSET_Y[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
-    const boxOffsetW = isText2 ? ((BOX_OFFSET_W[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
-    const boxOffsetH = isText2 ? ((BOX_OFFSET_H[props.el.font ?? 0]?.[align] ?? 0)) * props.zoom : 0
+    const boxOffsetX  = isText2 ? (BOX_OFFSET_X[props.el.font ?? 0]?.[align] ?? 0) * props.zoom : 0
+    const boxOffsetY  = isText2 ? (BOX_OFFSET_Y[props.el.font ?? 0]?.[align] ?? 0) * props.zoom : 0
+    const boxOffsetW  = isText2 ? (BOX_OFFSET_W[props.el.font ?? 0]?.[align] ?? 0) * props.zoom : 0
+    const boxOffsetH  = isText2 ? (BOX_OFFSET_H[props.el.font ?? 0]?.[align] ?? 0) * props.zoom : 0
     const fontOffsetW = isText2 ? (FONT_OFFSET_W[props.el.font ?? 0] ?? 0) * props.zoom : 0
 
     return {
-      left:   (props.el.x * props.zoom) + (w < 0 ? w : 0) + (isBox ? -4 * props.zoom : 0) + boxOffsetX + 'px',
-      top:    (props.el.y * props.zoom) + (h < 0 ? h : 0) - (props.el.h * props.zoom * baselineShift * 0.3) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + boxOffsetY + 'px',
+      left:   snap(props.el.x * props.zoom) + (w < 0 ? w : 0) + (isBox ? -4 * props.zoom : 0) + boxOffsetX + 'px',
+      top:    snap(props.el.y * props.zoom) + (h < 0 ? h : 0) - (props.el.h * props.zoom * baselineShift * 0.3) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + boxOffsetY + 'px',
       width:  Math.max(Math.abs(w), 4) + (isBox ? 3 * props.zoom : 0) + fontOffsetW + boxOffsetW + 'px',
       height: Math.max(Math.abs(h), 2) + (isBox ? 12 * props.zoom : 0) + boxOffsetH + 'px',
       cursor: props.el.locked ? 'default' : 'move',
