@@ -1,4 +1,4 @@
-  <template>
+<template>
     <div
       v-if="el.visible"
       class="td-element"
@@ -189,7 +189,7 @@
     const font = FONTS[props.el.font] || FONTS[0]
     const yScale = FONT_Y_SCALE[props.el.font] ?? 9.0
     const xScale = FONT_X_SCALE[props.el.font] ?? 1.0
-    const fs = Math.max(6, props.el.letterY * yScale * props.zoom)
+    const fs = Math.max(1, props.el.letterY * yScale * props.zoom)
     const scaleX = (props.el.letterY > 0
       ? (props.el.letterX / props.el.letterY) * 3.75 * xScale
       : xScale) * (FONT_WIDTH_SCALE[props.el.font] ?? 1)
@@ -200,10 +200,10 @@
   const wrappedHeight = computed(() => {
     if (!wrappedLines.value || wrappedLines.value.length <= 1) return null
     const yScale = FONT_Y_SCALE[props.el.font] ?? 9.0
-    const fs = Math.max(6, props.el.letterY * yScale * props.zoom)
+    const fs = Math.max(1, props.el.letterY * yScale * props.zoom)
     const isBox = props.el.type === 'box'
     const contentHeight = wrappedLines.value.length * fs * 1.3 + (isBox ? 12 * props.zoom : 0)
-    const elHeight = Math.max(Math.abs(props.el.h * props.zoom), 2) + (isBox ? 12 * props.zoom : 0)
+    const elHeight = Math.max(Math.abs(props.el.h * props.zoom), 2 * props.zoom) + (isBox ? 12 * props.zoom : 0)
     return Math.max(contentHeight, elHeight)
   })
 
@@ -299,8 +299,8 @@
     return {
       left:   snap(props.el.x * props.zoom) + (w < 0 ? w : 0) + (isBox ? -4 * props.zoom : 0) + boxOffsetX + 'px',
       top:    snap(props.el.y * props.zoom) + (h < 0 ? h : 0) - (props.el.h * props.zoom * baselineShift * 0.3) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + boxOffsetY + 'px',
-      width:  Math.max(Math.abs(w), 4) + (isBox ? 3 * props.zoom : 0) + fontOffsetW + boxOffsetW + 'px',
-      height: Math.max(Math.abs(h), 2) + (isBox ? 12 * props.zoom : 0) + boxOffsetH + 'px',
+      width:  (isSprite ? Math.abs(w) : Math.max(Math.abs(w), 4 * props.zoom)) + (isBox ? 3 * props.zoom : 0) + fontOffsetW + boxOffsetW + 'px',
+      height: (isSprite ? Math.abs(h) : Math.max(Math.abs(h), 2 * props.zoom)) + (isBox ? 12 * props.zoom : 0) + boxOffsetH + 'px',
       cursor: props.el.locked ? 'default' : 'move',
       zIndex: (props.el.layer || 0) + 10,
       transform: `scale(${w < 0 ? -1 : 1}, ${h < 0 ? -1 : 1})`,
@@ -358,7 +358,7 @@
     const font = FONTS[props.el.font] || FONTS[0]
     const yScale = FONT_Y_SCALE[props.el.font] ?? 9.0
     const xScale = FONT_X_SCALE[props.el.font] ?? 1.0
-    const fs = Math.max(6, props.el.letterY * yScale * props.zoom)
+    const fs = Math.max(1, props.el.letterY * yScale * props.zoom)
     const scaleX = (props.el.letterY > 0
       ? (props.el.letterX / props.el.letterY) * 3.75 * xScale
       : xScale) * (FONT_WIDTH_SCALE[props.el.font] ?? 1)
