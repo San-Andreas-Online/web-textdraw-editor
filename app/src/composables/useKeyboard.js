@@ -20,7 +20,7 @@ export function useKeyboard({ undo, redo, duplicate, selectAll, deleteSelected, 
       else deleteSelected()
     }
 
-    const step = e.shiftKey ? 10 : 1
+    const step = ctrl ? 0.1 : e.shiftKey ? 10 : 1
     const arrows = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']
     if (arrows.includes(e.key)) {
       e.preventDefault()
