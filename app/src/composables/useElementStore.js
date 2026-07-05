@@ -47,8 +47,8 @@ export function useElementStore() {
         return {
           ...JSON.parse(JSON.stringify(el)),
           id: Math.random().toString(36).slice(2, 9),
-          x: el.x + 10,
-          y: el.y + 10,
+          x: el.x,
+          y: el.y,
           name: `${base}(${next})`,
         }
       })
