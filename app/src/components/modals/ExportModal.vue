@@ -37,7 +37,6 @@ const openMp = ref(false)
 
 const displayCode = computed(() => {
   if (!props.code || !openMp.value) return props.code
-
   return props.code
     .replace(/\bTextDrawColor\b/g,           'TextDrawColour')
     .replace(/\bTextDrawBackgroundColor\b/g,  'TextDrawBackgroundColour')
@@ -55,6 +54,10 @@ const displayCode = computed(() => {
     .replace(/\bPlayerTextDrawSetSelectable\(playerid,\s*([^,]+),\s*1\)/g, (_, r) => `PlayerTextDrawSetSelectable(playerid, ${r}, true)`)
     .replace(/\bTextDrawUseBox\(([^,]+),\s*1\)/g,               (_, r) => `TextDrawUseBox(${r}, true)`)
     .replace(/\bPlayerTextDrawUseBox\(playerid,\s*([^,]+),\s*1\)/g, (_, r) => `PlayerTextDrawUseBox(playerid, ${r}, true)`)
+    .replace(/\bTextDrawSetPreviewVehCol\(([^,]+),\s*(\d+),\s*(\d+)\)/g, (_, r, c1, c2) => `TextDrawSetPreviewVehicleColours(${r}, ${c1}, ${c2})`)
+    .replace(/\bPlayerTextDrawSetPreviewVehCol\(playerid,\s*([^,]+),\s*(\d+),\s*(\d+)\)/g, (_, r, c1, c2) => `PlayerTextDrawSetPreviewVehicleColours(playerid, ${r}, ${c1}, ${c2})`)
+    .replace(/\bTextDrawSetProportional\(([^,]+),\s*false\)/g, (_, r) => `TextDrawSetProportional(${r}, false)`)
+    .replace(/\bPlayerTextDrawSetProportional\(playerid,\s*([^,]+),\s*false\)/g, (_, r) => `PlayerTextDrawSetProportional(playerid, ${r}, false)`)
     .replace(/^(\/\/ TextDraw Designer )sa-mp( | )/m, '$1open.mp$2')
 })
 

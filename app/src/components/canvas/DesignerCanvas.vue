@@ -38,6 +38,7 @@
             @mousedown="(e, el) => emit('el-mousedown', e, el)"
             @contextmenu="(e, el) => emit('contextmenu', e, el)"
             @resize-start="(e, el) => emit('el-resize-start', e, el)"
+            @rot-drag-start="(e, el) => emit('el-rot-drag-start', e, el)"
           />
         </div>
 
@@ -97,6 +98,7 @@ const emit = defineEmits([
   'canvas-mousedown',
   'el-mousedown',
   'el-resize-start',
+  'el-rot-drag-start',
   'ref-mousedown',
   'ref-resize-start',
   'sprite-drop',

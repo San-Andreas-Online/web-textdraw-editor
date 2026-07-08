@@ -58,7 +58,7 @@
 <script setup>
 const emit = defineEmits(['add-element', 'add-preset'])
 
-const elementTypes = ['label', 'box', 'sprite']
+const elementTypes = ['label', 'box', 'sprite', 'model']
 
 </script>
 

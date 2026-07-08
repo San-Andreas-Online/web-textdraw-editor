@@ -64,6 +64,7 @@ function isSpriteName(text) {
 }
 
 function detectType(el) {
+  if (el.font === 5) return 'model'
   if (el.font === 4 || isSpriteName(el.text)) return 'sprite'
   if (el.useBox && el.text === '_') return 'box'
   return 'label'
@@ -116,9 +117,17 @@ export function importPawn(code) {
         useBox: false,
         proportional: false,
         selectable: false,
+        _rawBgColor: undefined,
         _rawTextSizeX: 0,
         _rawTextSizeY: 0,
         _flipped: false,
+        modelId: 411,
+        modelZoom: 1.0,
+        modelRotX: 0.0,
+        modelRotY: 0.0,
+        modelRotZ: 0.0,
+        modelColor1: 0,
+        modelColor2: 0,
       }
       continue
     }
@@ -166,7 +175,20 @@ export function importPawn(code) {
       if (m) current.text = m[1]
     } else if (/(?:TextDraw|PlayerTextDraw)BackgroundColou?r/i.test(line)) {
       const [raw] = extractLastArgs(line, 1)
-      current.bgColor = parseColor(raw)
+      current._rawBgColor = parseColor(raw)
+    } else if (/(?:TextDraw|PlayerTextDraw)SetPreviewModel/i.test(line)) {
+      const [raw] = extractLastArgs(line, 1)
+      current.modelId = parseInt(raw) || 411
+    } else if (/(?:TextDraw|PlayerTextDraw)SetPreviewRot/i.test(line)) {
+      const [rx, ry, rz, zoom] = extractLastArgs(line, 4)
+      current.modelRotX = parseFloat(rx) || 0
+      current.modelRotY = parseFloat(ry) || 0
+      current.modelRotZ = parseFloat(rz) || 0
+      current.modelZoom = parseFloat(zoom) || 1
+    } else if (/(?:TextDraw|PlayerTextDraw)SetPreviewVeh(?:Col|icleColou?rs)/i.test(line)) {
+      const [c1, c2] = extractLastArgs(line, 2)
+      current.modelColor1 = parseInt(c1) || 0
+      current.modelColor2 = parseInt(c2) || 0
     }
   }
 
@@ -185,7 +207,16 @@ export function importPawn(code) {
     delete el._rawX
     delete el._flipped
 
-    if (el.type === 'sprite') {
+    if (el.type === 'model') {
+      // TextDrawTextSize for model preview is direct w,h
+      el.w = tx * INV_SX
+      el.h = ty
+      el.textSizeX = 0
+      el.textSizeY = 0
+      // BackgroundColour on a model is the box backdrop color, not bgColor
+      el.boxColor = el._rawBgColor ?? 0x00000000
+      el.bgColor = 0x00000000
+    } else if (el.type === 'sprite') {
       el.text = el.text.toLowerCase()
       el.w = tx * INV_SX
       el.h = ty
@@ -218,6 +249,8 @@ export function importPawn(code) {
     }
 
     if (flipped) el.w = -Math.abs(el.w)
+    if (el.type !== 'model') el.bgColor = el._rawBgColor ?? el.bgColor
+    delete el._rawBgColor
   }
 
   return elements

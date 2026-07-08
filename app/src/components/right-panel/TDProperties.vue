@@ -143,7 +143,168 @@
         </PropRow>
       </XpPanel>
 
-      <XpPanel title="Colors">
+      <!-- ── Model previewer panel ── -->
+      <XpPanel v-if="el.type === 'model'" title="Model">
+
+        <!-- Model type tabs -->
+        <div class="toggle-group" style="margin-bottom:8px">
+          <button
+            v-for="tab in [['vehicle','Vehicles'],['skin','Skins'],['object','Objects']]"
+            :key="tab[0]"
+            class="tog-btn"
+            :class="{ active: modelTypeTab === tab[0] }"
+            @click="switchModelTab(tab[0])"
+          >{{ tab[1] }}</button>
+        </div>
+
+        <PropRow :label="modelTypeTab === 'vehicle' ? 'Vehicle' : modelTypeTab === 'skin' ? 'Skin' : 'Object'">
+          <div class="font-select model-vehicle-select" :class="{ open: vehicleOpen }" @click="vehicleOpen = !vehicleOpen; color1Open = false; color2Open = false">
+            <span class="vehicle-label">{{ modelLabel(el.modelId) }}</span>
+            <span class="vehicle-id">{{ el.modelId }}</span>
+            <span class="font-arrow">▾</span>
+            <div class="font-dropdown vehicle-dropdown" v-if="vehicleOpen">
+              <div class="vehicle-search-wrap">
+                <input
+                  class="vehicle-search"
+                  v-model="vehicleSearch"
+                  placeholder="Search..."
+                  @click.stop
+                  @mousedown.stop
+                />
+              </div>
+              <div
+                class="vehicle-list"
+                :ref="modelTypeTab === 'object' ? (el) => { objectListEl = el } : undefined"
+                @scroll="modelTypeTab === 'object' ? onObjectListScroll($event) : undefined"
+              >
+                <div
+                  class="font-option vehicle-option"
+                  v-for="item in currentList"
+                  :key="item.id"
+                  :class="{ active: el.modelId === item.id }"
+                  @mousedown.prevent="u('modelId', item.id); vehicleOpen = false; vehicleSearch = ''"
+                  @mouseenter="onItemMouseEnter(item, $event)"
+                  @mouseleave="onItemMouseLeave"
+                >
+                  <span>{{ (item.name ?? item.model).slice(0, 9) + ((item.name ?? item.model).length > 9 ? '…' : '') }}</span>
+                  <span class="vehicle-opt-id">{{ item.id }}</span>
+                </div>
+                <div v-if="modelTypeTab === 'object' && !vehicleSearch.trim() && visibleObjects.length < filteredObjects.length" class="object-load-hint">
+                  Scroll for more…
+                </div>
+              </div>
+            </div>
+          </div>
+        </PropRow>
+        <Teleport to="body">
+          <Transition name="preview-fade">
+            <div
+              v-if="hoverVisible && hoverItem"
+              class="model-hover-preview"
+              :style="{ top: hoverY + 'px', left: hoverX + 'px' }"
+            >
+              <ModelRenderer
+                :modelId="hoverItem.id"
+                :modelType="modelTypeTab"
+                :modelZoom="el.modelZoom"
+                :modelRotX="el.modelRotX"
+                :modelRotY="el.modelRotY"
+                :modelRotZ="el.modelRotZ"
+                :modelColor1="el.modelColor1 ?? 0"
+                :modelColor2="el.modelColor2 ?? 0"
+                :color="0xFFFFFFFF"
+                :boxColor="0x00000000"
+              />
+            </div>
+          </Transition>
+        </Teleport>
+        <div class="num-grid" style="margin-top:6px">
+          <div class="num-cell">
+            <span class="num-label">Zoom</span>
+            <NumberInput :value="el.modelZoom" :step="0.05" :min="0.1" :max="20" @update:modelValue="u('modelZoom', $event)" />
+          </div>
+          <div class="num-cell">
+            <span class="num-label">Rot X</span>
+            <NumberInput :value="el.modelRotX" :step="1" :min="-180" :max="180" @update:modelValue="u('modelRotX', $event)" />
+          </div>
+          <div class="num-cell">
+            <span class="num-label">Rot Y</span>
+            <NumberInput :value="el.modelRotY" :step="1" :min="-180" :max="180" @update:modelValue="u('modelRotY', $event)" />
+          </div>
+          <div class="num-cell">
+            <span class="num-label">Rot Z</span>
+            <NumberInput :value="el.modelRotZ" :step="1" :min="-180" :max="180" @update:modelValue="u('modelRotZ', $event)" />
+          </div>
+        </div>
+        <div v-if="modelTypeTab === 'vehicle'" class="num-grid" style="margin-top:6px">
+          <div class="num-cell">
+            <span class="num-label">Primary</span>
+            <div class="font-select colour-dropdown-trigger" :class="{ open: color1Open }" @click="color1Open = !color1Open; color2Open = false; vehicleOpen = false; vehicleSearch = ''">
+              <span class="colour-preview" :style="{ background: SA_CAR_COLOURS[el.modelColor1] ? `rgb(${SA_CAR_COLOURS[el.modelColor1][0]},${SA_CAR_COLOURS[el.modelColor1][1]},${SA_CAR_COLOURS[el.modelColor1][2]})` : '#888' }"></span>
+              <span class="colour-trigger-id">{{ el.modelColor1 }}</span>
+              <span class="font-arrow">▾</span>
+              <div class="font-dropdown colour-palette-dropdown" v-if="color1Open" @click.stop>
+                <div class="colour-id-input-row">
+                  <span class="colour-preview-sm" :style="{ background: SA_CAR_COLOURS[el.modelColor1] ? `rgb(${SA_CAR_COLOURS[el.modelColor1][0]},${SA_CAR_COLOURS[el.modelColor1][1]},${SA_CAR_COLOURS[el.modelColor1][2]})` : '#888' }"></span>
+                  <input class="colour-id-input" type="number" min="0" max="255"
+                    :value="el.modelColor1"
+                    @mousedown.stop
+                    @input="u('modelColor1', Math.min(255, Math.max(0, parseInt($event.target.value) || 0)))"
+                  />
+                </div>
+                <div class="colour-palette-grid">
+                  <div
+                    v-for="(col, idx) in SA_CAR_COLOURS"
+                    :key="idx"
+                    class="colour-swatch"
+                    :class="{ active: el.modelColor1 === idx }"
+                    :style="{ background: `rgb(${col[0]},${col[1]},${col[2]})` }"
+                    :title="idx"
+                    @mousedown.prevent="u('modelColor1', idx)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="num-cell">
+            <span class="num-label">Secondary</span>
+            <div class="font-select colour-dropdown-trigger" :class="{ open: color2Open }" @click="color2Open = !color2Open; color1Open = false; vehicleOpen = false; vehicleSearch = ''">
+              <span class="colour-preview" :style="{ background: SA_CAR_COLOURS[el.modelColor2] ? `rgb(${SA_CAR_COLOURS[el.modelColor2][0]},${SA_CAR_COLOURS[el.modelColor2][1]},${SA_CAR_COLOURS[el.modelColor2][2]})` : '#888' }"></span>
+              <span class="colour-trigger-id">{{ el.modelColor2 }}</span>
+              <span class="font-arrow">▾</span>
+              <div class="font-dropdown colour-palette-dropdown colour-palette-dropdown--right" v-if="color2Open" @click.stop>
+                <div class="colour-id-input-row">
+                  <span class="colour-preview-sm" :style="{ background: SA_CAR_COLOURS[el.modelColor2] ? `rgb(${SA_CAR_COLOURS[el.modelColor2][0]},${SA_CAR_COLOURS[el.modelColor2][1]},${SA_CAR_COLOURS[el.modelColor2][2]})` : '#888' }"></span>
+                  <input class="colour-id-input" type="number" min="0" max="255"
+                    :value="el.modelColor2"
+                    @mousedown.stop
+                    @input="u('modelColor2', Math.min(255, Math.max(0, parseInt($event.target.value) || 0)))"
+                  />
+                </div>
+                <div class="colour-palette-grid">
+                  <div
+                    v-for="(col, idx) in SA_CAR_COLOURS"
+                    :key="idx"
+                    class="colour-swatch"
+                    :class="{ active: el.modelColor2 === idx }"
+                    :style="{ background: `rgb(${col[0]},${col[1]},${col[2]})` }"
+                    :title="idx"
+                    @mousedown.prevent="u('modelColor2', idx)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="color-label">Tint color</div>
+          <ColorSwatch :modelValue="el.color ?? 0xFFFFFFFF" @update:modelValue="u('color', $event)" />
+          <div class="color-label" style="margin-top:6px">Box color</div>
+          <ColorSwatch :modelValue="el.boxColor ?? 0x00000000" @update:modelValue="u('boxColor', $event)" />
+        </div>
+      </XpPanel>
+
+      <XpPanel v-if="el.type !== 'model'" title="Colors">
         <div class="color-label">Text color</div>
         <ColorSwatch :modelValue="el.color" @update:modelValue="u('color', $event)" />
         <div class="color-label" style="margin-top:6px">Box color</div>
@@ -164,11 +325,53 @@ import PropRow     from '../shared/PropRow.vue'
 import NumberInput from '../shared/NumberInput.vue'
 import ColorSwatch from '../shared/ColorSwatch.vue'
 import XpPanel     from '../shared/XpPanel.vue'
+import ModelRenderer from '../canvas/ModelRenderer.vue'
 import { FONT_NAMES } from '../../constants/fonts'
 import { computed, ref, watch, reactive, onMounted, onUnmounted } from 'vue'
+import { SA_VEHICLES, SA_VEHICLE_MAP } from '../../constants/saVehicles'
+import { SA_CAR_COLOURS } from '../../constants/saCarColours'
+import { SA_SKINS, SA_SKIN_MAP, SA_OBJECTS, SA_OBJECT_MAP, saModelsReady } from '../../constants/saModels'
 
+const fontOpen     = ref(false)
+const vehicleOpen  = ref(false)
+const vehicleSearch = ref('')
+const modelTypeTab = ref('vehicle')
 
-const fontOpen = ref(false)
+const MODEL_TYPE_DEFAULT_IDS = { vehicle: 411, skin: 1, object: 1277 }
+
+const hoverItem    = ref(null)
+const hoverTimer   = ref(null)
+const hoverVisible = ref(false)
+const hoverX       = ref(0)
+const hoverY       = ref(0)
+
+function onItemMouseEnter(item, e) {
+  clearTimeout(hoverTimer.value)
+  const rect = e.currentTarget.getBoundingClientRect()
+  hoverX.value = rect.left - 118
+  hoverY.value = rect.top - 20
+  hoverTimer.value = setTimeout(() => {
+    hoverItem.value    = item
+    hoverVisible.value = true
+  }, 120)
+}
+
+function onItemMouseLeave() {
+  clearTimeout(hoverTimer.value)
+  hoverVisible.value = false
+  hoverItem.value    = null
+}
+
+async function switchModelTab(tab) {
+  modelTypeTab.value = tab
+  vehicleSearch.value = ''
+  vehicleOpen.value = false
+  u('modelType', tab)
+  if (tab === 'object') {
+    await saModelsReady
+  }
+  u('modelId', MODEL_TYPE_DEFAULT_IDS[tab])
+}
 
 const props = defineProps({
   el:     { type: Object, required: true },
@@ -199,7 +402,15 @@ watch(() => props.selArr, () => {
   Object.keys(multiFlags).forEach(k => multiFlags[k] = false)
 })
 
+watch(() => props.el?.id, () => {
+  if (props.el?.type !== 'model') return
+  if (props.el.modelColor1 === undefined) u('modelColor1', 0)
+  if (props.el.modelColor2 === undefined) u('modelColor2', 0)
+})
+
 const alignOpen = ref(false)
+const color1Open = ref(false)
+const color2Open = ref(false)
 const ALIGN_OPTIONS = [
   { id: 0, label: 'Left' },
   { id: 1, label: 'Center' },
@@ -213,10 +424,23 @@ function onClickOutside(e)
   if (!e.target.closest('.font-select')) {
     fontOpen.value = false
     alignOpen.value = false
+    vehicleOpen.value = false
+    vehicleSearch.value = ''
+    color1Open.value = false
+    color2Open.value = false
   }
 }
 
-onMounted(() => window.addEventListener('mousedown', onClickOutside))
+const objectsReady = ref(false)
+
+onMounted(async () => {
+  window.addEventListener('mousedown', onClickOutside)
+  if (props.el?.type === 'model') {
+    modelTypeTab.value = props.el.modelType ?? 'vehicle'
+  }
+  await saModelsReady
+  objectsReady.value = true
+})
 onUnmounted(() => window.removeEventListener('mousedown', onClickOutside))
 
 const isText = computed(() => ['label', 'button', 'box', 'sprite'].includes(props.el.type))
@@ -232,6 +456,76 @@ const textFlags = computed(() => {
     return flags.filter(([_, key]) => key !== 'useBox')
   }
   return flags
+})
+
+const filteredVehicles = computed(() => {
+  const q = vehicleSearch.value.trim().toLowerCase()
+  if (!q) return SA_VEHICLES
+  return SA_VEHICLES.filter(v => v.name.toLowerCase().includes(q) || String(v.id).includes(q))
+})
+
+const filteredSkins = computed(() => {
+  const q = vehicleSearch.value.trim().toLowerCase()
+  if (!q) return SA_SKINS
+  return SA_SKINS.filter(s => s.name.toLowerCase().includes(q) || String(s.id).includes(q))
+})
+
+const filteredObjects = computed(() => {
+  void objectsReady.value
+  const q = vehicleSearch.value.trim().toLowerCase()
+  if (!q) return SA_OBJECTS
+  return SA_OBJECTS.filter(o => o.model.toLowerCase().includes(q) || String(o.id).includes(q))
+})
+
+const OBJECT_PAGE_SIZE = 80
+const objectPageCount  = ref(1)
+const objectListEl     = ref(null)
+
+const visibleObjects = computed(() => {
+  const list = filteredObjects.value
+  if (vehicleSearch.value.trim()) return list
+  return list.slice(0, objectPageCount.value * OBJECT_PAGE_SIZE)
+})
+
+function onObjectListScroll(e) {
+  const el = e.target
+  if (el.scrollHeight - el.scrollTop - el.clientHeight < 120) {
+    const maxPages = Math.ceil(filteredObjects.value.length / OBJECT_PAGE_SIZE)
+    if (objectPageCount.value < maxPages) objectPageCount.value++
+  }
+}
+
+watch(vehicleOpen, (open) => {
+  if (open) {
+    objectPageCount.value = 1
+  } else {
+    clearTimeout(hoverTimer.value)
+    hoverVisible.value = false
+    hoverItem.value    = null
+  }
+})
+watch(vehicleSearch, () => {
+  objectPageCount.value = 1
+})
+
+watch(() => props.el?.id, () => {
+  if (props.el?.type === 'model') {
+    modelTypeTab.value = props.el.modelType ?? 'vehicle'
+  }
+})
+
+function modelLabel(id)
+{
+  if (modelTypeTab.value === 'vehicle') return SA_VEHICLE_MAP[id] ?? 'Unknown'
+  if (modelTypeTab.value === 'skin')    return SA_SKIN_MAP[id]    ?? 'Unknown'
+  void objectsReady.value
+  return SA_OBJECTS.find(o => o.id === id)?.model ?? 'Unknown'
+}
+
+const currentList = computed(() => {
+  if (modelTypeTab.value === 'vehicle') return filteredVehicles.value
+  if (modelTypeTab.value === 'skin')    return filteredSkins.value
+  return visibleObjects.value
 })
 </script>
 
@@ -379,10 +673,179 @@ const textFlags = computed(() => {
 
 .font-select { position:relative; display:flex; align-items:center; justify-content:space-between; padding:2px 6px; background:var(--bg0); border:1px solid var(--border2); border-radius:3px; cursor:pointer; font-size:11px; color:var(--text0); min-width:100px; }
 .font-select:hover { border-color:var(--accent); }
-.font-arrow { font-size:9px; color:var(--text2); margin-left:6px; }
+.font-arrow { font-size:9px; color:var(--text2); margin-left:6px; flex-shrink:0; }
 .font-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--bg2); border:1px solid var(--border2); border-radius:3px; z-index:999; box-shadow:2px 4px 12px rgba(0,0,0,0.6); }
 .font-option { padding:4px 8px; font-size:13px; cursor:pointer; color:var(--text0); }
 .font-option:hover { background:var(--accent-dim); color:var(--text0); }
 .font-option.active { color:var(--accent); }
 
+/* ── Vehicle picker ── */
+.model-vehicle-select { gap: 4px; }
+.vehicle-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.vehicle-id { font-size: 9px; color: var(--text2); font-weight: 700; flex-shrink: 0; }
+
+.vehicle-dropdown {
+  min-width: 100%;
+  max-height: 220px;
+  display: flex;
+  flex-direction: column;
+}
+
+.vehicle-search-wrap {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border2);
+  flex-shrink: 0;
+}
+
+.vehicle-search {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 11px;
+  padding: 2px 4px;
+  background: var(--bg0);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--text0);
+  outline: none;
+}
+.vehicle-search:focus { border-color: var(--accent); }
+
+.vehicle-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.vehicle-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.vehicle-opt-id {
+  font-size: 9px;
+  color: var(--text2);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+/* ── Colour palette dropdown ── */
+.colour-dropdown-trigger { gap: 4px; min-width: 0; }
+.colour-preview {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid var(--border2);
+  flex-shrink: 0;
+}
+.colour-trigger-id {
+  flex: 1;
+  font-size: 10px;
+  color: var(--text2);
+  font-weight: 700;
+}
+.colour-palette-dropdown {
+  padding: 6px;
+  width: 160px;
+  left: 0;
+  right: auto;
+}
+.colour-palette-dropdown--right {
+  left: auto !important;
+  right: 0 !important;
+}
+.colour-palette-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+.colour-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 1px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.colour-id-input-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 4px 5px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 5px;
+}
+.colour-preview-sm {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid var(--border2);
+  flex-shrink: 0;
+}
+.colour-id-input {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 11px;
+  padding: 2px 4px;
+  background: var(--bg0);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--text0);
+  outline: none;
+}
+.colour-id-input:focus { border-color: var(--accent); }
+.colour-id-input::-webkit-inner-spin-button,
+.colour-id-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.colour-id-input { -moz-appearance: textfield; }
+.colour-swatch:hover {
+  border-color: var(--text0);
+  transform: scale(1.3);
+  z-index: 1;
+  position: relative;
+}
+.colour-swatch.active {
+  border-color: var(--accent);
+  transform: scale(1.4);
+  z-index: 2;
+  position: relative;
+}
+
+.object-load-hint {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text2);
+  padding: 6px 0 4px;
+  font-family: 'Tahoma', sans-serif;
+  user-select: none;
+}
+
+.model-hover-preview {
+  position: fixed;
+  width: 110px;
+  height: 90px;
+  background: var(--bg1);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 2px 4px 14px rgba(0,0,0,0.7);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.preview-fade-enter-active,
+.preview-fade-leave-active {
+  transition: opacity 0.1s ease;
+}
+.preview-fade-enter-from,
+.preview-fade-leave-to {
+  opacity: 0;
+}
 </style>

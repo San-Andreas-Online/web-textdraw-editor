@@ -16,4 +16,23 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    proxy: {
+      '/api-proxy': {
+        target: 'https://gtaundergroundmod.com',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api-proxy/, ''),
+      },
+      '/openmp-proxy': {
+        target: 'https://assets.open.mp',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/openmp-proxy/, ''),
+      },
+      '/wiki-proxy': {
+        target: 'https://wiki.multitheftauto.com',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/wiki-proxy/, ''),
+      },
+    },
+  },
 })

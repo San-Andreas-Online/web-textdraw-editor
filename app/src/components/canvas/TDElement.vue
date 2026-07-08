@@ -22,6 +22,26 @@
         <div v-if="!spritePath || imgFailed" class="sprite-fallback">{{ el.text }}</div>
       </div>
 
+      <!-- Model previewer -->
+      <div v-else-if="el.type === 'model'" class="fill model-wrap">
+        <ModelRenderer
+          :modelId="el.modelId ?? 411"
+          :modelType="el.modelType ?? 'vehicle'"
+          :modelZoom="el.modelZoom ?? 1.0"
+          :modelRotX="el.modelRotX ?? 0.0"
+          :modelRotY="el.modelRotY ?? 0.0"
+          :modelRotZ="el.modelRotZ ?? 0.0"
+          :modelColor1="el.modelColor1 ?? 0"
+          :modelColor2="el.modelColor2 ?? 0"
+          :color="el.color ?? 0xFFFFFFFF"
+          :boxColor="el.boxColor ?? 0x00000000"
+          :width="Math.abs(el.w)"
+          :height="Math.abs(el.h)"
+          :zoom="zoom"
+        />
+      </div>
+
+
       <!-- Box / Line -->
       <div v-else-if="el.type === 'box' || el.type === 'line'" class="fill text-el" :style="textWrapStyle">
         <div :style="fontOffsetStyle">
@@ -54,6 +74,12 @@
           class="resize-handle-global"
           @mousedown.stop="onResizeStart"
         />
+        <div
+          v-if="!el.locked && el.type === 'model'"
+          class="rot-handle-global"
+          title="Drag to rotate (X/Y) · Shift = Z"
+          @mousedown.stop="onRotStart"
+        />
       </div>
     </Teleport>
   </template>
@@ -63,6 +89,8 @@
   import { rgbaToCSS, numToHex6, hexToRGBA } from '../../utils/colors'
   import { spriteImagePath, localSpriteImagePath } from '../../constants/sprites'
   import { FONTS } from '../../constants/fonts'
+  import ModelRenderer from './ModelRenderer.vue'
+
 
   const props = defineProps({
     el: { type: Object, required: true },
@@ -70,7 +98,7 @@
     zoom: { type: Number, default: 1 },
   })
 
-  const emit = defineEmits(['mousedown', 'resize-start', 'contextmenu'])
+  const emit = defineEmits(['mousedown', 'resize-start', 'rot-drag-start', 'contextmenu'])
 
   const imgFailed = ref(false)
   const localPath = ref(null)
@@ -91,6 +119,7 @@
     if (!lib || !tex) return null
     return localSpriteImagePath(lib, tex)
   })
+
 
   function onImgError() {
     if (!localPath.value) {
@@ -312,8 +341,9 @@
     const yScale = FONT_Y_SCALE[props.el.font] ?? 9.0
     const numericOffsets = getNumericOffsets(props.el.font, props.el.align ?? 0, props.el.text || '')
     const fs = Math.max(6, props.el.letterY * yScale * props.zoom * numericOffsets.h)
-    const contentHeight = wrappedLines.value.length * fs * 1.3
-    const elHeight = Math.max(Math.abs(props.el.h * props.zoom), 2)
+    const isBox = props.el.type === 'box'
+    const contentHeight = wrappedLines.value.length * fs * 1.3 + (isBox ? 12 * props.zoom : 0)
+    const elHeight = Math.max(Math.abs(props.el.h * props.zoom), 2) + (isBox ? 12 * props.zoom : 0)
     return Math.max(contentHeight, elHeight)
   })
 
@@ -414,10 +444,10 @@
     const fontOffsetW = isText2 ? (FONT_OFFSET_W[props.el.font ?? 0] ?? 0) * fs : 0
 
     return {
-      left: snap(props.el.x * props.zoom) + (w < 0 ? w : 0) + boxOffsetX + 'px',
-      top: snap(props.el.y * props.zoom) + (h < 0 ? h : 0) + (isSprite ? -3 * props.zoom : 0) + boxOffsetY + 'px',
-      width: Math.abs(w) + fontOffsetW + boxOffsetW + numericOffsetW + 'px',
-      height: Math.abs(h) + boxOffsetH + 'px',
+      left: snap(props.el.x * props.zoom) + (w < 0 ? w : 0) + (isBox ? -4 * props.zoom : 0) + boxOffsetX + 'px',
+      top: snap(props.el.y * props.zoom) + (h < 0 ? h : 0) + (isBox ? -7 * props.zoom : 0) + (isSprite ? -3 * props.zoom : 0) + boxOffsetY + 'px',
+      width: (isSprite ? Math.abs(w) : Math.max(Math.abs(w), 4 * props.zoom)) + (isBox ? 3 * props.zoom : 0) + fontOffsetW + boxOffsetW + numericOffsetW + 'px',
+      height: (isSprite ? Math.abs(h) : Math.max(Math.abs(h), 2 * props.zoom)) + (isBox ? 12 * props.zoom : 0) + boxOffsetH + 'px',
       cursor: props.el.locked ? 'default' : 'move',
       zIndex: (props.el.layer || 0) + 10,
       transform: `scale(${w < 0 ? -1 : 1}, ${h < 0 ? -1 : 1})`,
@@ -438,6 +468,8 @@
     const y = isText2 ? (FONT_OFFSET_Y[props.el.font ?? 0]?.[align] ?? 0) * baseFs * props.zoom + (numericOffsets.y ?? 0) * fs : 0
     return { transform: `translate(${x}px, ${y}px)` }
   })
+
+
 
 
   const boxStyle = computed(() => ({
@@ -541,6 +573,11 @@
     emit('resize-start', e, props.el)
   }
 
+  function onRotStart(e) {
+    if (e.button !== 0) return
+    emit('rot-drag-start', e, props.el)
+  }
+
   function buildTextShadow(outline, shadow, bgColor, zoom) {
     const col = rgbaToCSS(bgColor ?? 0x000000FF)
     const parts = []
@@ -619,5 +656,52 @@
   }
   .wrapped-line {
     display: block;
+  }
+  .model-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  </style>
+  <style>
+  .rot-handle-global {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    bottom: -16px;
+    right: -16px;
+    background: #C80041;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    cursor: grab;
+    pointer-events: all;
+  }
+  .rot-handle-global:active { cursor: grabbing; }
+  </style>
+  <style scoped>
+
+  .model-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+    background: transparent;
+  }
+  .model-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(200,0,65,0.06);
+    border: 1px dashed rgba(200,0,65,0.35);
+    box-sizing: border-box;
+  }
+  .model-fallback-id {
+    font-family: 'Tahoma', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(200,0,65,0.6);
   }
   </style>

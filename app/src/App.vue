@@ -79,6 +79,7 @@
           @canvas-mousedown="onCanvasMD"
           @el-mousedown="onElMD"
           @el-resize-start="onElRS"
+          @el-rot-drag-start="onElRotMD"
           @ref-mousedown="onRefMD"
           @ref-resize-start="onRefRS"
           @contextmenu="onContextMenu"
@@ -213,6 +214,7 @@ const exportCode = ref('')
 const jsonText   = ref('')
 const notifs     = ref([])
 const copiedStyle = ref(null)
+const rotDrag = ref(null)
 const canvas     = ref(null)
 const canvasWrap = ref(null)
 const projectsApi = useProjects()
@@ -277,6 +279,17 @@ function onElRS(e, el)
   resize.start(cvPos(e), el)
 }
 
+function onElRotMD(e, el) {
+  rotDrag.value = {
+    elId: el.id,
+    startX: e.clientX,
+    startY: e.clientY,
+    startRotX: el.modelRotX ?? 0,
+    startRotY: el.modelRotY ?? 0,
+    startRotZ: el.modelRotZ ?? 0,
+  }
+}
+
 function onRefMD(e, r) {
   store.clearSelection()
   refImages.select(r.id)
@@ -301,6 +314,22 @@ function onMove(e) {
   resize.move(pos)
   marquee.move(pos)
   refDrag.move(pos)
+
+  if (rotDrag.value) {
+    const dx = e.clientX - rotDrag.value.startX
+    const dy = e.clientY - rotDrag.value.startY
+    const speed = 0.5
+    if (e.shiftKey) {
+      store.updEl(rotDrag.value.elId, {
+        modelRotZ: Math.round(rotDrag.value.startRotZ + dx * speed),
+      })
+    } else {
+      store.updEl(rotDrag.value.elId, {
+        modelRotX: Math.round(rotDrag.value.startRotX + dy * speed),
+        modelRotY: Math.round(rotDrag.value.startRotY - dx * speed),
+      })
+    }
+  }
 }
 
 function onUp(e) {
@@ -309,6 +338,18 @@ function onUp(e) {
   resize.stop(next => store.commitEls(next))
   marquee.stop(pos)
   refDrag.stop()
+  if (rotDrag.value) rotDrag.value = null
+}
+
+function onRotWheel(e) {
+  if (!rotDrag.value) return
+  e.preventDefault()
+  const el = store.els.value.find(el => el.id === rotDrag.value.elId)
+  if (!el) return
+  const delta = e.deltaY > 0 ? 0.05 : -0.05
+  store.updEl(rotDrag.value.elId, {
+    modelZoom: Math.round(Math.max(0.1, (el.modelZoom ?? 1) + delta) * 100) / 100,
+  })
 }
 
 const ctxIsCanvas = ref(false)
@@ -595,21 +636,8 @@ function onUploadRefs(e) {
   if (files) refImages.upload(files)
 }
 
-onMounted(async () => {
-  console.log('[app] onMounted fired, URL:', window.location.search)
-  await projectsApi.refresh()
-  const redirected = await githubAuth.handleCallback()
-  if (redirected) {
-    const count = await projectsApi.pullFromCloud()
-    if (count) onNotify(`Pulled ${count} project(s) from cloud`, 'success')
-    await projectsApi.refresh()
-  }
-})
-
-async function onPullFromCloud() {
-  const count = await projectsApi.pullFromCloud()
-  onNotify(count ? `Pulled ${count} project(s) from cloud` : 'Already up to date', count ? 'success' : 'info')
-}
+onMounted(() => window.addEventListener('wheel', onRotWheel, { passive: false }))
+onUnmounted(() => window.removeEventListener('wheel', onRotWheel))
 
 useKeyboard({
   undo: () => store.undo(),
