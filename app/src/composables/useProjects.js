@@ -1,16 +1,39 @@
 import { ref } from 'vue'
 import { saveProject, listProjects, getProject, deleteProject, makeProjectId } from '../utils/projectsDb'
+import { useGistSync } from './useGistSync'
 
 export function useProjects() {
-  const projects = ref([])       // metadata list: { id, name, updatedAt }
-  const currentId = ref(null)    // id of the project currently loaded, or null if unsaved
+  const projects = ref([])
+  const currentId = ref(null)
+  const gistSync = useGistSync()
 
   async function refresh() {
     const all = await listProjects()
     projects.value = all.map(p => ({ id: p.id, name: p.name, updatedAt: p.updatedAt }))
   }
 
-  // snapshot = { els, prefix, bgImage, refs, widescreen, showGrid, gridSize, zoom }
+  async function syncToCloud() {
+    if (!gistSync.token.value) return
+    const all = await listProjects()
+    await gistSync.push(all)
+  }
+
+  async function pullFromCloud() {
+    const remote = await gistSync.pull()
+    if (!remote?.projects?.length) return 0
+
+    let imported = 0
+    for (const project of remote.projects) {
+      const existing = await getProject(project.id)
+      if (!existing || existing.updatedAt < project.updatedAt) {
+        await saveProject(project)
+        imported++
+      }
+    }
+    await refresh()
+    return imported
+  }
+
   async function saveAsNew(name, snapshot) {
     const project = {
       id: makeProjectId(),
@@ -21,19 +44,16 @@ export function useProjects() {
     await saveProject(project)
     currentId.value = project.id
     await refresh()
+    await syncToCloud()
     return project.id
   }
 
   async function saveExisting(id, name, snapshot) {
-    const project = {
-      id,
-      name,
-      updatedAt: Date.now(),
-      data: snapshot,
-    }
+    const project = { id, name, updatedAt: Date.now(), data: snapshot }
     await saveProject(project)
     currentId.value = id
     await refresh()
+    await syncToCloud()
   }
 
   async function load(id) {
@@ -47,7 +67,20 @@ export function useProjects() {
     await deleteProject(id)
     if (currentId.value === id) currentId.value = null
     await refresh()
+    await syncToCloud()
   }
 
-  return { projects, currentId, refresh, saveAsNew, saveExisting, load, remove }
+  return {
+    projects,
+    currentId,
+    syncing: gistSync.syncing,
+    lastSynced: gistSync.lastSynced,
+    refresh,
+    saveAsNew,
+    saveExisting,
+    load,
+    remove,
+    pullFromCloud,
+    syncToCloud,
+  }
 }

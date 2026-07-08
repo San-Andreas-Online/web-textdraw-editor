@@ -126,6 +126,7 @@
       @save-current="onSaveProjectCurrent"
       @load="onLoadProject"
       @delete="onDeleteProject"
+      @pull-cloud="onPullFromCloud"
     />
 
     <ContextMenu
@@ -168,6 +169,7 @@ import { useRefImages } from './composables/useRefImages'
 import { useValidation } from './composables/useValidation'
 import { useKeyboard } from './composables/useKeyboard'
 import { useProjects } from './composables/useProjects'
+import { useGithubAuth } from './composables/useGithubAuth'
 
 
 import { exportPawn } from './utils/exportPawn'
@@ -214,6 +216,7 @@ const copiedStyle = ref(null)
 const canvas     = ref(null)
 const canvasWrap = ref(null)
 const projectsApi = useProjects()
+const githubAuth = useGithubAuth()
 const showProjects = ref(false)
 
 const selRefObj = computed(() =>
@@ -590,6 +593,22 @@ function onUploadBg(e) {
 function onUploadRefs(e) {
   const files = e?.target?.files ?? e
   if (files) refImages.upload(files)
+}
+
+onMounted(async () => {
+  console.log('[app] onMounted fired, URL:', window.location.search)
+  await projectsApi.refresh()
+  const redirected = await githubAuth.handleCallback()
+  if (redirected) {
+    const count = await projectsApi.pullFromCloud()
+    if (count) onNotify(`Pulled ${count} project(s) from cloud`, 'success')
+    await projectsApi.refresh()
+  }
+})
+
+async function onPullFromCloud() {
+  const count = await projectsApi.pullFromCloud()
+  onNotify(count ? `Pulled ${count} project(s) from cloud` : 'Already up to date', count ? 'success' : 'info')
 }
 
 useKeyboard({
