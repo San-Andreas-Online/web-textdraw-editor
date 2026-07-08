@@ -122,9 +122,9 @@ function parseWikitext(wikitext) {
       /^\|\s*'{0,3}\*{0,2}(\d+)\*{0,2}'{0,3}\s*\|\|\s*([^|]+?)\s*\|\|\s*([^|]+?)\s*\|?\s*$/
     )
     if (match) {
-      const id    = parseInt(match[1], 10)
-      const model = match[2].trim()
-      const txd   = match[3].trim()
+      const id = parseInt(match[1], 10)
+      const model = match[2].trim().toLowerCase()
+      const txd = match[3].trim().toLowerCase()
       if (!isNaN(id) && model) results.push({ id, model, txd })
     }
   }

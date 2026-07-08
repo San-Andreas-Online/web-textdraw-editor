@@ -337,7 +337,7 @@ const vehicleOpen  = ref(false)
 const vehicleSearch = ref('')
 const modelTypeTab = ref('vehicle')
 
-const MODEL_TYPE_DEFAULT_IDS = { vehicle: 411, skin: 1, object: 1277 }
+const MODEL_TYPE_DEFAULT_IDS = { vehicle: 411, skin: 1, object: 16442 }
 
 const hoverItem    = ref(null)
 const hoverTimer   = ref(null)

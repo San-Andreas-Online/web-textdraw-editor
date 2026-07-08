@@ -24,7 +24,7 @@ const SA_SKIN_MODEL    = Object.fromEntries(SA_SKINS.map(s => [s.id, s.model]))
 const TYPE_FALLBACK_ID = {
   vehicle: SA_VEHICLES[0]?.id ?? 411,
   skin:    SA_SKINS[0]?.id    ?? 0,
-  object:  1277,
+  object:  16442,
 }
 
 
