@@ -47,8 +47,9 @@ The export generates clean, ready-to-paste pawn code.
 
 **Requirements:** Node.js 18 or higher
 ```bash
-git clone https://github.com/San-Andreas-Online/textdraw-designer
-cd textdraw-designer
+git clone https://github.com/San-Andreas-Online/web-textdraw-designer
+cd web-textdraw-designer
+cd app
 npm install
 npm run dev
 ```

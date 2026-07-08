@@ -27,6 +27,7 @@
       <button class="btn" @click="store.undo()">Undo</button>
       <button class="btn" @click="store.redo()">Redo</button>
       <div class="sep" />
+      <button class="btn" @click="onOpenProjects">Projects</button>
       <button class="btn" @click="onOpenJson">Import</button>
       <button class="btn primary" @click="onExport">Export Pawn</button>
     </div>
@@ -115,6 +116,18 @@
 
     <ExportModal :show="showExport" :code="exportCode" :prefix="prefix" @close="showExport = false" />
     <JsonModal :show="showJson" :json="jsonText" @close="showJson = false" @load="onJsonLoad" @load-pawn="onImportLoad" />
+
+    <ProjectsModal
+      :show="showProjects"
+      :projects="projectsApi.projects.value"
+      :currentId="projectsApi.currentId.value"
+      @close="showProjects = false"
+      @save-new="onSaveProjectNew"
+      @save-current="onSaveProjectCurrent"
+      @load="onLoadProject"
+      @delete="onDeleteProject"
+    />
+
     <ContextMenu
       v-if="ctxPos"
       :pos="ctxPos"
@@ -154,6 +167,7 @@ import { useBgImage } from './composables/useBgImage'
 import { useRefImages } from './composables/useRefImages'
 import { useValidation } from './composables/useValidation'
 import { useKeyboard } from './composables/useKeyboard'
+import { useProjects } from './composables/useProjects'
 
 
 import { exportPawn } from './utils/exportPawn'
@@ -164,6 +178,7 @@ import RightPanel from './components/right-panel/RightPanel.vue'
 import DesignerCanvas from './components/canvas/DesignerCanvas.vue'
 import ExportModal from './components/modals/ExportModal.vue'
 import JsonModal from './components/modals/JsonModal.vue'
+import ProjectsModal from './components/modals/ProjectsModal.vue'
 import ContextMenu from './components/modals/ContextMenu.vue'
 import NotificationStack from './components/modals/NotificationStack.vue'
 
@@ -198,6 +213,8 @@ const notifs     = ref([])
 const copiedStyle = ref(null)
 const canvas     = ref(null)
 const canvasWrap = ref(null)
+const projectsApi = useProjects()
+const showProjects = ref(false)
 
 const selRefObj = computed(() =>
   refImages.selRef.value
@@ -457,6 +474,61 @@ function onExport() {
 function onOpenJson() {
   jsonText.value = JSON.stringify(store.els.value, null, 2)
   showJson.value = true
+}
+
+function buildSnapshot() {
+  return JSON.parse(JSON.stringify({
+    els: store.els.value,
+    prefix: prefix.value,
+    bgImage: bgImg.bgImage.value,
+    refs: refImages.refs.value,
+    widescreen: widescreen.value,
+    showGrid: showGrid.value,
+    gridSize: gridSize.value,
+    zoom: zoom.value,
+  }))
+}
+
+function applySnapshot(data) {
+  store.commitEls(data.els ?? [])
+  prefix.value = data.prefix ?? 'td'
+  bgImg.bgImage.value = data.bgImage ?? null
+  refImages.refs.value = data.refs ?? []
+  refImages.selRef.value = null
+  widescreen.value = data.widescreen ?? false
+  showGrid.value = data.showGrid ?? true
+  gridSize.value = data.gridSize ?? 5
+  zoom.value = data.zoom ?? 2
+}
+
+async function onOpenProjects() {
+  await projectsApi.refresh()
+  showProjects.value = true
+}
+
+async function onSaveProjectNew(name) {
+  await projectsApi.saveAsNew(name, buildSnapshot())
+  onNotify('Project saved!', 'success')
+}
+
+async function onSaveProjectCurrent() {
+  if (!projectsApi.currentId.value) return
+  const existing = projectsApi.projects.value.find(p => p.id === projectsApi.currentId.value)
+  await projectsApi.saveExisting(projectsApi.currentId.value, existing?.name ?? 'Project', buildSnapshot())
+  onNotify('Project updated!', 'success')
+}
+
+async function onLoadProject(id) {
+  const project = await projectsApi.load(id)
+  if (!project) return onNotify('Project not found', 'error')
+  applySnapshot(project.data)
+  showProjects.value = false
+  onNotify(`"${project.name}" loaded`, 'success')
+}
+
+async function onDeleteProject(id) {
+  await projectsApi.remove(id)
+  onNotify('Project deleted', 'info')
 }
 
 function onJsonLoad(text) {

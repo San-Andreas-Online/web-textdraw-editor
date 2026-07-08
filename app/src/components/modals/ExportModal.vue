@@ -37,6 +37,7 @@ const openMp = ref(false)
 
 const displayCode = computed(() => {
   if (!props.code || !openMp.value) return props.code
+
   return props.code
     .replace(/\bTextDrawColor\b/g,           'TextDrawColour')
     .replace(/\bTextDrawBackgroundColor\b/g,  'TextDrawBackgroundColour')

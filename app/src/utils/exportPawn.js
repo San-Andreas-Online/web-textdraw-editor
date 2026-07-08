@@ -61,7 +61,7 @@ export function exportPawn(els, prefix) {
       lines.push(`    ${ref} = TextDrawCreate(${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
       lines.push(`    TextDrawFont(${ref}, 4);`)
       lines.push(`    TextDrawTextSize(${ref}, ${el.w.toFixed(1)}, ${el.h.toFixed(1)});`)
-      lines.push(`    TextDrawColour(${ref}, ${col});`)
+      lines.push(`    TextDrawColor(${ref}, ${col});`)
     } else {
       lines.push(`    ${ref} = TextDrawCreate(${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
       lines.push(`    TextDrawFont(${ref}, ${el.font});`)
@@ -69,11 +69,11 @@ export function exportPawn(els, prefix) {
       const isLabel = el.type === 'label'
       const exportLX = isLabel && el.w < 0 ? -Math.abs(el.letterX) : el.letterX
       lines.push(`    TextDrawLetterSize(${ref}, ${exportLX.toFixed(3)}, ${exportLY.toFixed(3)});`)
-      lines.push(`    TextDrawColour(${ref}, ${col});`)
+      lines.push(`    TextDrawColor(${ref}, ${col});`)
       lines.push(`    TextDrawAlignment(${ref}, ${el.align + 1});`)
       if (el.useBox) {
         lines.push(`    TextDrawUseBox(${ref}, 1);`)
-        lines.push(`    TextDrawBoxColour(${ref}, ${box});`)
+        lines.push(`    TextDrawBoxColor(${ref}, ${box});`)
         const { tx, ty } = calcTextSize(el)
         lines.push(`    TextDrawTextSize(${ref}, ${tx.toFixed(1)}, ${ty.toFixed(1)});`)
       }
@@ -100,7 +100,7 @@ export function exportPawn(els, prefix) {
       lines.push(`    ${ref} = CreatePlayerTextDraw(playerid, ${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
       lines.push(`    PlayerTextDrawFont(playerid, ${ref}, 4);`)
       lines.push(`    PlayerTextDrawTextSize(playerid, ${ref}, ${el.w.toFixed(1)}, ${el.h.toFixed(1)});`)
-      lines.push(`    PlayerTextDrawColour(playerid, ${ref}, ${col});`)
+      lines.push(`    PlayerTextDrawColor(playerid, ${ref}, ${col});`)
     } else {
       lines.push(`    ${ref} = CreatePlayerTextDraw(playerid, ${el.x.toFixed(1)}, ${el.y.toFixed(1)}, "${txt}");`)
       lines.push(`    PlayerTextDrawFont(playerid, ${ref}, ${el.font});`)
@@ -108,11 +108,11 @@ export function exportPawn(els, prefix) {
       const isLabel = el.type === 'label' || el.type === 'button'
       const exportLX = isLabel && el.w < 0 ? -Math.abs(el.letterX) : el.letterX
       lines.push(`    PlayerTextDrawLetterSize(playerid, ${ref}, ${exportLX.toFixed(3)}, ${exportLY.toFixed(3)});`)
-      lines.push(`    PlayerTextDrawColour(playerid, ${ref}, ${col});`)
+      lines.push(`    PlayerTextDrawColor(playerid, ${ref}, ${col});`)
       lines.push(`    PlayerTextDrawAlignment(playerid, ${ref}, ${el.align + 1});`)
       if (el.useBox) {
         lines.push(`    PlayerTextDrawUseBox(playerid, ${ref}, 1);`)
-        lines.push(`    PlayerTextDrawBoxColour(playerid, ${ref}, ${box});`)
+        lines.push(`    PlayerTextDrawBoxColor(playerid, ${ref}, ${box});`)
         const { tx, ty } = calcTextSize(el)
         lines.push(`    PlayerTextDrawTextSize(playerid, ${ref}, ${tx.toFixed(1)}, ${ty.toFixed(1)});`)
       }
