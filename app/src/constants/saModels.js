@@ -2,7 +2,7 @@
  * saModels.js
  *
  * SA_SKINS — hardcoded (ped IDs are not on the IDE_List; static since SA shipped).
- * SA_OBJECTS — live array, starts empty and is populated in the background.
+ * SA_OBJECTS — live array, fetched from AmyrAhmady/openmp-models on GitHub.
  *              Await `saModelsReady` before reading it.
  */
 
@@ -115,21 +115,8 @@ export const SA_SKIN_MAP = Object.fromEntries(SA_SKINS.map(s => [s.id, s.name]))
 
 // ─── Dynamic object/model loader ─────────────────────────────────────────────
 
-function parseWikitext(wikitext) {
-  const results = []
-  for (const line of wikitext.split('\n')) {
-    const match = line.match(
-      /^\|\s*'{0,3}\*{0,2}(\d+)\*{0,2}'{0,3}\s*\|\|\s*([^|]+?)\s*\|\|\s*([^|]+?)\s*\|?\s*$/
-    )
-    if (match) {
-      const id = parseInt(match[1], 10)
-      const model = match[2].trim().toLowerCase()
-      const txd = match[3].trim().toLowerCase()
-      if (!isNaN(id) && model) results.push({ id, model, txd })
-    }
-  }
-  return results
-}
+const OBJECTS_URL =
+  'https://raw.githubusercontent.com/AmyrAhmady/openmp-models/refs/heads/master/src/resources/objects.tsx'
 
 /**
  * Live array — starts empty, populated in-place once the fetch completes.
@@ -144,29 +131,19 @@ export const SA_OBJECTS = []
  */
 export const saModelsReady = (async () => {
   try {
-    // Proxied through Vite (dev) or your server (prod) to avoid CORS.
-    // Add this to vite.config.js → server.proxy:
-    //   '/wiki-proxy': {
-    //     target: 'https://wiki.multitheftauto.com',
-    //     changeOrigin: true,
-    //     rewrite: path => path.replace(/^\/wiki-proxy/, ''),
-    //   }
-    const res = await fetch(
-      '/wiki-proxy/api.php?action=parse&page=IDE_List&prop=wikitext&format=json'
-    )
+    const res = await fetch(OBJECTS_URL)
     if (!res.ok) throw new Error(`fetch failed: ${res.status}`)
-    const json = await res.json()
-    const wikitext = json?.parse?.wikitext?.['*']
-    if (!wikitext) throw new Error('Unexpected API response shape')
+    const text = await res.text()
+    // Strip "export default " prefix so JSON.parse can handle it
+    const json = JSON.parse(text.replace(/^export default\s*/, ''))
     const seen = new Set()
-    const deduped = parseWikitext(wikitext).filter(o => {
-      if (seen.has(o.id)) return false
+    for (const o of json) {
+      if (seen.has(o.id)) continue
       seen.add(o.id)
-      return true
-    })
-    SA_OBJECTS.push(...deduped)
+      SA_OBJECTS.push({ id: o.id, model: o.name.toLowerCase(), txd: (o.txd ?? '').toLowerCase() })
+    }
   } catch (err) {
-    console.error('[saModels] Failed to load IDE list:', err)
+    console.error('[saModels] Failed to load objects:', err)
   }
 })()
 

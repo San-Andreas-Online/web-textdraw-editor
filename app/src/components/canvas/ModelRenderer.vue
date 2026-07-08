@@ -95,10 +95,10 @@ function openMpToClump(frames)
     name:   f.name || `frame${i}`,
     parent: f.parent ?? -1,
     matrix: [
-      f.matrix[0][0], f.matrix[1][0], f.matrix[2][0],
-      f.matrix[0][1], f.matrix[1][1], f.matrix[2][1],
-      f.matrix[0][2], f.matrix[1][2], f.matrix[2][2],
-      f.matrix[0][3], f.matrix[1][3], f.matrix[2][3],
+      f.matrix[0][0], f.matrix[0][1], f.matrix[0][2],
+      f.matrix[1][0], f.matrix[1][1], f.matrix[1][2],
+      f.matrix[2][0], f.matrix[2][1], f.matrix[2][2],
+      f.matrix[3][0], f.matrix[3][1], f.matrix[3][2],
     ],
   }))
 
@@ -132,6 +132,7 @@ function openMpToClump(frames)
     const vertices = geo.vertices.map(v => [v.x, v.y, v.z])
     const normals  = null // open.mp doesn't export separate normals
     const prelit   = geo.vertices.map(v => {
+      if (v.color == null) return [255, 255, 255, 255]
       const c = v.color >>> 0
       return [(c >> 24) & 0xFF, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF]
     })
@@ -877,8 +878,9 @@ function drawFrame() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
   const dist = props.modelZoom * 5
-  const pitch = deg2rad(props.modelRotX)
-  const yaw   = deg2rad(props.modelRotY + 90)
+  const isSkin = props.modelType === 'skin'
+  const pitch = deg2rad(props.modelRotX + (isSkin ? 90 : 0))
+  const yaw   = deg2rad(props.modelRotY + (isSkin ? 270 : 90))
   const roll  = deg2rad(props.modelRotZ)
 
   // Camera pos from pitch + yaw only (no roll affects position)
