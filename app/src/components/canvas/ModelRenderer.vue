@@ -60,7 +60,7 @@ let lastModelId = null
 // ── API ──────────────────────────────────────────────────────────────────────
 const API_BASE = 'https://gtaundergroundmod.com'
 const API_TOKEN = 'eah6Y9WHe.Vq_hOWqX0NEFhU-yuPO3zVGZ_YYJjvgWe7nhATiuxsgMKhwpwWyp9w'
-const TEX_BASE = `/resources/textures`
+const TEX_BASE = `/api-proxy/resources/textures`
 const MODEL_BASE = `${API_BASE}/resources/models`
 
 async function fetchModel(modelName) {
@@ -820,7 +820,7 @@ async function loadAndRender(modelId)
       if (!modelName) { loadState.value = 'error'; errorMsg.value = `Unknown ID ${modelId}`; return }
 
       const data    = await fetchModel(modelName)
-      const texBase = `/resources/textures`
+      const texBase = TEX_BASE
 
       rpClumpInit(gl, data.model_stream, texBase)
       setupSACar(data.model_stream)
