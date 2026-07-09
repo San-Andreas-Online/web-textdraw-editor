@@ -325,8 +325,8 @@ function onMove(e) {
       })
     } else {
       store.updEl(rotDrag.value.elId, {
-        modelRotX: Math.round(rotDrag.value.startRotX + dy * speed),
-        modelRotZ: Math.round(rotDrag.value.startRotZ - dx * speed),
+        modelRotX: Math.round(rotDrag.value.startRotX - dy * speed),
+        modelRotZ: Math.round(rotDrag.value.startRotZ + dx * speed),
       })
     }
   }

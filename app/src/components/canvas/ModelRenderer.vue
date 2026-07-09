@@ -879,8 +879,8 @@ function drawFrame() {
 
   const dist = props.modelZoom * 5
   const isSkin = props.modelType === 'skin'
-  const pitch = deg2rad(props.modelRotX + (isSkin ? 90 : 0))
-  const yaw   = deg2rad(props.modelRotZ + (isSkin ? 270 : 90))
+  const pitch = deg2rad(-props.modelRotX + (isSkin ? 90 : 0))
+  const yaw   = deg2rad(-props.modelRotZ + (isSkin ? 270 : 90))
   const roll  = deg2rad(props.modelRotY)
 
   // Camera pos from pitch + yaw only (no roll affects position)
