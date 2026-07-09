@@ -321,12 +321,12 @@ function onMove(e) {
     const speed = 0.5
     if (e.shiftKey) {
       store.updEl(rotDrag.value.elId, {
-        modelRotZ: Math.round(rotDrag.value.startRotZ + dx * speed),
+        modelRotY: Math.round(rotDrag.value.startRotY + dx * speed),
       })
     } else {
       store.updEl(rotDrag.value.elId, {
         modelRotX: Math.round(rotDrag.value.startRotX + dy * speed),
-        modelRotY: Math.round(rotDrag.value.startRotY - dx * speed),
+        modelRotZ: Math.round(rotDrag.value.startRotZ - dx * speed),
       })
     }
   }

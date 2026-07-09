@@ -77,7 +77,7 @@
         <div
           v-if="!el.locked && el.type === 'model'"
           class="rot-handle-global"
-          title="Drag to rotate (X/Y) · Shift = Z"
+          title="Drag to rotate (X/Z) · Shift = Y"
           @mousedown.stop="onRotStart"
         />
       </div>
