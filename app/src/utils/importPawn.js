@@ -1,3 +1,15 @@
+import { SA_VEHICLES } from '../constants/saVehicles'
+import { SA_SKINS } from '../constants/saModels'
+
+const VEHICLE_IDS = new Set(SA_VEHICLES.map(v => v.id))
+const SKIN_IDS = new Set(SA_SKINS.map(s => s.id))
+
+function detectModelType(id) {
+  if (VEHICLE_IDS.has(id)) return 'vehicle'
+  if (SKIN_IDS.has(id)) return 'skin'
+  return 'object'
+}
+
 const FONT_NAME_MAP = {
   'TEXT_DRAW_FONT_0': 0, 'TEXT_DRAW_FONT_1': 1,
   'TEXT_DRAW_FONT_2': 2, 'TEXT_DRAW_FONT_3': 3,
@@ -122,6 +134,7 @@ export function importPawn(code) {
         _rawTextSizeY: 0,
         _flipped: false,
         modelId: 411,
+        modelType: 'vehicle',
         modelZoom: 1.0,
         modelRotX: 0.0,
         modelRotY: 0.0,
@@ -179,6 +192,7 @@ export function importPawn(code) {
     } else if (/(?:TextDraw|PlayerTextDraw)SetPreviewModel/i.test(line)) {
       const [raw] = extractLastArgs(line, 1)
       current.modelId = parseInt(raw) || 411
+      current.modelType = detectModelType(current.modelId)
     } else if (/(?:TextDraw|PlayerTextDraw)SetPreviewRot/i.test(line)) {
       const [rx, ry, rz, zoom] = extractLastArgs(line, 4)
       current.modelRotX = parseFloat(rx) || 0
