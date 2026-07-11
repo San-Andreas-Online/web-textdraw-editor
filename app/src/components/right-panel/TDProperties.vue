@@ -36,6 +36,13 @@
           </div>
         </PropRow>
         <div class="num-grid" style="margin-top:4px">
+          <div class="num-cell size-cell">
+            <span class="num-label">Size %</span>
+            <NumberInput :value="100" :step="5" :min="1" @update:modelValue="onMultiSizeInput" />
+          </div>
+        </div>
+        <div class="size-hint">LtrX/LtrY scale of each element, maintaining the original aspect ratio.</div>
+        <div class="num-grid" style="margin-top:4px">
           <div class="num-cell">
             <span class="num-label">LtrX</span>
             <NumberInput :value="0" :step="0.005" :min="0" @update:modelValue="um('letterX', $event)" />
@@ -117,6 +124,13 @@
           </div>
         </PropRow>
         <div class="num-grid">
+          <div class="full-span">
+            <span class="num-label">Size</span>
+            <NumberInput :value="el.letterY" :step="0.05" :min="0.05" @update:modelValue="onSizeInput" />
+          </div>
+        </div>
+        <div class="size-hint">Just like in Photoshop: LtrX and LtrY scale together, maintaining the text's aspect ratio.</div>
+        <div class="num-grid">
           <div class="num-cell"><span class="num-label">LtrX</span><NumberInput :value="el.letterX" :step="0.005" :min="0" @update:modelValue="u('letterX', $event)" /></div>
           <div class="num-cell"><span class="num-label">LtrY</span><NumberInput :value="el.letterY" :step="0.005" :min="0" @update:modelValue="u('letterY', $event)" /></div>
           <div class="num-cell"><span class="num-label">TxSzX</span><NumberInput :value="el.textSizeX" @update:modelValue="u('textSizeX', $event)" /></div>
@@ -174,7 +188,7 @@ const props = defineProps({
   el:     { type: Object, required: true },
   selArr: { type: Array,  default: () => [] },
 })
-const emit = defineEmits(['update', 'update-multi', 'duplicate', 'delete'])
+const emit = defineEmits(['update', 'update-multi', 'update-multi-scale', 'duplicate', 'delete'])
 
 const isMulti = computed(() => props.selArr.length > 1)
 function um(key, val) { emit('update-multi', { [key]: val }) }
@@ -207,6 +221,21 @@ const ALIGN_OPTIONS = [
 ]
 
 function u(key, val) { emit('update', { [key]: val }) }
+
+const DEFAULT_LETTER_RATIO = 0.26
+
+function onSizeInput(newSize) {
+  const oldY = props.el.letterY
+  const ratio = oldY > 0 ? props.el.letterX / oldY : DEFAULT_LETTER_RATIO
+  emit('update', {
+    letterY: newSize,
+    letterX: parseFloat((newSize * ratio).toFixed(4)),
+  })
+}
+
+function onMultiSizeInput(pct) {
+  emit('update-multi-scale', pct / 100)
+}
 
 function onClickOutside(e)
 {
@@ -248,6 +277,17 @@ const textFlags = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+.full-span { grid-column: 1 / -1; }
+.size-cell .input {
+  border-color: var(--accent);
+}
+.size-hint {
+  font-family: 'Tahoma', sans-serif;
+  font-size: 9px;
+  color: var(--text2);
+  margin: 2px 0 6px;
+  line-height: 1.3;
 }
 .num-label {
   font-family: 'Tahoma', sans-serif;

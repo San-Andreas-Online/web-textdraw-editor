@@ -111,6 +111,7 @@
         @paste-style="onPasteStyle"
         @batch-rename="onBatchRename"
         @update-multi="onUpdateMulti"
+        @update-multi-scale="onUpdateMultiScale"
       />
     </div>
 
@@ -392,7 +393,12 @@ function onUpdateEl(id, patches)
   const w = 'w' in patches ? patches.w : el.w
   const x = 'x' in patches ? patches.x : el.x
 
-  if ('h' in patches) merged.letterY = parseFloat((patches.h * 0.135).toFixed(3))
+  if ('h' in patches) {
+    const newLetterY = parseFloat((patches.h * 0.135).toFixed(3))
+    const ratio = el.letterY > 0 ? el.letterX / el.letterY : 0.26
+    merged.letterY = newLetterY
+    merged.letterX = parseFloat((newLetterY * ratio).toFixed(4))
+  }
 
   if ('w' in patches || 'align' in patches) {
     if (align === 1) {
@@ -582,6 +588,19 @@ function onUpdateMulti(patches)
   const next = store.els.value.map(el =>
     store.selected.value.has(el.id) ? { ...el, ...patches } : el
   )
+  store.commitEls(next)
+}
+
+function onUpdateMultiScale(factor)
+{
+  const next = store.els.value.map(el => {
+    if (!store.selected.value.has(el.id)) return el
+    return {
+      ...el,
+      letterX: parseFloat((el.letterX * factor).toFixed(4)),
+      letterY: parseFloat((el.letterY * factor).toFixed(4)),
+    }
+  })
   store.commitEls(next)
 }
 

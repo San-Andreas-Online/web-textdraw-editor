@@ -12,6 +12,7 @@
           :selArr="selArr"
           @update="(patches) => emit('update-el', selOne.id, patches)"
           @update-multi="(patches) => emit('update-multi', patches)"
+          @update-multi-scale="(pct) => emit('update-multi-scale', pct)"
           @duplicate="emit('duplicate')"
           @delete="emit('delete')"
         />
@@ -21,6 +22,7 @@
           :el="{ color: 0, boxColor: 0, font: 0, align: 0 }"
           :selArr="selArr"
           @update-multi="(patches) => emit('update-multi', patches)"
+          @update-multi-scale="(pct) => emit('update-multi-scale', pct)"
           @duplicate="emit('duplicate')"
           @delete="emit('delete')"
         />
@@ -49,7 +51,7 @@ defineProps({
 })
 
 const emit = defineEmits([
-  'update-el', 'update-multi', 'duplicate', 'delete',
+  'update-el', 'update-multi', 'update-multi-scale', 'duplicate', 'delete',
   'update-ref', 'delete-ref',
   'align', 'copy-style', 'paste-style', 'batch-rename',
 ])
